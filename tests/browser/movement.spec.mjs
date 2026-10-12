@@ -45,3 +45,15 @@ test('a lighter next move changes title, illustration, instructions and actual s
  await expect(page.locator('.move-summary-detail')).toContainText('Gentle weight shifts');
  await expect(page.locator('.move-stats')).toContainText('1:17');
 });
+
+test('living companion appears and hands-free option remains user-controlled',async({page})=>{
+ await page.goto('/');
+ await page.getByRole('button',{name:/make my session/i}).click();
+ await page.getByRole('button',{name:/see my plan/i}).click();
+ await expect(page.locator('.aira-companion')).toBeVisible();
+ await expect(page.getByText(/HANDS-FREE FLOW/i)).toBeVisible();
+ await page.getByRole('button',{name:/Off · Turn on/i}).click();
+ await expect(page.getByRole('button',{name:/On · Turn off/i})).toBeVisible();
+ await page.getByRole('button',{name:/Start 1:15 session/i}).click();
+ await expect(page.locator('.aira-movement-heading .aira-companion')).toBeVisible();
+});

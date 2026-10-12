@@ -47,3 +47,7 @@ The five trusted stages remain keyed `settle`, `flow_a`, `recovery`, `flow_b`, a
 The main preview leads the page. An expandable Studio contains the opt-in provider settings, text commands, legacy wiring fixture and builder tools without removing test access. Local mock simulation remains functional with no credentials; the optional model receives a validated current `movement` name, but it still has no authority to change trusted state.
 
 **v2 verification:** 61 Node tests pass, as do TypeScript and safety lint; Chromium blocks localhost navigation in this execution environment, so fresh v2 Playwright/browser screenshots require a local run. A new browser specification covers mobile clarity and the fully adapted golden path. Live provider modes were not tested with real credentials.
+
+## The Living Workout v3
+
+See [CREATIVE_V3.md](CREATIVE_V3.md) for the expressive companion, reactive scene, opt-in hands-free flow and factual postcard. The hands-free three-second countdown is owned by the trusted session controller and is interruptible via “Stay here”, manual continuation, or disabling hands-free.

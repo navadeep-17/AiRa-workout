@@ -56,3 +56,9 @@ Commands such as “pause”, “more rest”, “gentle” and “what’s next
 See [docs/IMPLEMENTATION_PLAN_V2.md](docs/IMPLEMENTATION_PLAN_V2.md) for the screen-by-screen scope and acceptance criteria. A meaningful workout phase is not just a timer: it has a named movement, a short instruction, an illustration, a responsive coaching cue, a visible countdown, and honest simulated completion tracking. All activity is optional and fictional; the app cannot verify what a person physically does.
 
 **Verification status:** The v2 source passed 61 Node unit/HTTP tests, TypeScript checking and static safety lint in the build environment using Node 22.16 (below the documented 22.18+ runtime requirement). The browser UI tests exist but were **not run successfully** here: Chromium navigation to localhost was blocked by the environment. No real OpenAI or Claude model call was tested. Before submitting, run the browser suite on the target machine, manually inspect mobile/desktop, and update the mode note with the results actually observed.
+
+## V3 — the living workout moment
+
+An original expressive SVG companion responds to session state (hello, movement, recovery, adaptation, pause, finish). Choosing a gentler second movement updates the next card, timing, instruction, illustration, and factual summary. The summary closes with a personalized, deterministic postcard based on recorded decisions.
+
+Optional **hands-free flow** appears in Plan preview and during active movement. When enabled, each simulated phase waits three seconds after completion before starting the next; **Stay here**, manual Continue and disabling hands-free remain available. Hands-free is OFF by default. The original OpenUI renderer and studio remain available; no sensors, physical results, synthetic voice, or provider calls are implied. Character animations honor `prefers-reduced-motion`.

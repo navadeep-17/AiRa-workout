@@ -100,3 +100,29 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
  .studio .conversation{padding:12px}
 }
 @media(prefers-reduced-motion:reduce){.move-figure,.studio-arrow{animation:none!important;transition:none!important}}
+
+/* THE LIVING WORKOUT · expressive presence, responsive scenery and personal closure. */
+.aira-companion{width:142px;max-width:100%;flex-shrink:0;filter:drop-shadow(0 12px 15px rgba(35,83,54,.1));display:inline-grid;place-items:center;animation:aira-float 3.2s ease-in-out infinite;transform-origin:center 75%}
+.aira-companion svg{width:100%;height:auto;overflow:visible}
+.aira-companion.is-small{width:91px}
+.aira-companion.mood-pause{animation:aira-breathe 4.5s ease-in-out infinite}
+.aira-companion.mood-recover{animation:aira-breathe 5s ease-in-out infinite}
+.aira-companion.mood-adapt{animation:aira-pop .65s ease-out both}
+.aira-companion.mood-celebrate .aira-spark{animation:aira-sparkle 1.7s ease-in-out infinite;transform-origin:178px 41px}
+.aira-companion.mood-hello .aira-arm-right{animation:aira-wave 1.7s ease-in-out infinite;transform-origin:157px 97px}
+.aira-intro-companion{display:flex;align-items:center;gap:12px;padding:6px 0;margin-bottom:8px}.aira-intro-companion .move-overline{letter-spacing:.07em}
+.aira-movement-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.aira-movement-copy{flex:1;min-width:0}.aira-movement-heading .aira-companion{margin-right:0}
+.move-hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.move-hero .aira-companion{order:2;width:125px}.move-hero-title{flex:1;min-width:225px}
+.aira-autoflow-choice{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#ebf3e8;padding:12px 15px;margin:18px 0;border-radius:15px}.aira-autoflow-choice .move-small{max-width:350px}.aira-autoflow-mini{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:4px 0 8px}.aira-autoflow-mini .move-button{min-height:30px;padding:3px 9px;font-size:12px}.aira-next-countdown{font-size:12px;letter-spacing:.03em;color:#537a66}
+.move-next.is-adapted{position:relative;background:#e4f4dc;border:1px solid #95bfa1;animation:aira-transform .5s ease both}.aira-adapt-label{font-size:9px;letter-spacing:.12em;font-weight:750;color:#3f7e55}
+.aira-postcard{background:radial-gradient(circle at 83% 20%,#d2efcd,transparent 58%),linear-gradient(150deg,#f3f9ec,#e8f1e7);border:1px solid #d1e4d0;border-radius:23px;padding:22px 25px;text-align:left;box-shadow:0 12px 30px rgba(36,83,47,.06);margin-bottom:16px}
+.aira-postcard .aira-companion{width:94px;display:inline-grid;vertical-align:middle}.aira-postcard .move-title{font-size:clamp(28px,4vw,46px);margin:10px 0}.aira-postcard-note{font-family:Georgia,serif;font-size:17px;line-height:1.5;color:#496b50;max-width:480px}
+.move-scene.has-adaptation.stage-recovery{background:radial-gradient(circle at 83% 7%,#c5e8b6 0,transparent 49%),linear-gradient(140deg,#ecf7e9,#f4f8ed);transition:background-color .5s ease}
+@keyframes aira-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes aira-breathe{0%,100%{transform:scale(.97)}50%{transform:scale(1.025)}}
+@keyframes aira-wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+@keyframes aira-pop{0%{opacity:.4;transform:translateY(9px) scale(.91)}75%{transform:translateY(-4px) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes aira-sparkle{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes aira-transform{from{opacity:.65;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.aira-companion{width:105px}.aira-companion.is-small{width:67px}.move-hero .aira-companion{width:95px}.aira-movement-heading .aira-companion{width:62px}.aira-postcard{padding:17px}.aira-autoflow-choice{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.aira-companion,.aira-companion .aira-arm-right,.aira-companion .aira-spark,.move-next.is-adapted{animation:none!important;transition:none!important}}

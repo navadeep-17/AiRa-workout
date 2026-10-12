@@ -103,3 +103,31 @@ test("movement snapshots match the user's chosen replacement after ending early"
  assert.equal(s.records.at(-1).movementTitle,'Gentle weight shifts');
  assert.equal(s.records.at(-1).outcome,'skipped');
 });
+
+test('hands-free flow is off by default and advances only after a three-second preview',()=>{
+ const {s,clock}=create();assert.equal(s.autoFlow,false);begin(s);
+ assert(s.setAutoFlow(true));clock.forward(10);assert(s.tick());assert(s.waiting);
+ assert.equal(s.autoCountdown,3);assert.equal(s.records.length,0);
+ clock.forward(2);assert.equal(s.tick(),false);assert.equal(s.stage,'settle');
+ clock.forward(1);assert(s.tick());assert.equal(s.stage,'flow_a');assert.equal(s.records.length,1);
+ assert.equal(s.timer().status,'running');assert.equal(s.records[0].movementTitle,'Shoulder rolls');
+});
+
+test('Stay here prevents automatic advance until manual Continue',()=>{
+ const {s,clock}=create();begin(s);s.setAutoFlow(true);clock.forward(10);s.tick();
+ assert(s.holdNext());clock.forward(120);assert.equal(s.tick(),false);assert.equal(s.stage,'settle');
+ assert.equal(s.autoCountdown,null);assert(s.next());assert.equal(s.stage,'flow_a');
+});
+
+test('hands-free can be disabled while waiting without losing the completed phase',()=>{
+ const {s,clock}=create();begin(s);s.setAutoFlow(true);clock.forward(10);s.tick();
+ assert(s.setAutoFlow(false));clock.forward(5);assert.equal(s.tick(),false);
+ assert.equal(s.completed,0);assert(s.next());assert.equal(s.completed,1);assert.equal(s.stage,'flow_a');
+});
+
+test('ending while countdown is pending cancels auto transition and preserves completion',()=>{
+ const {s,clock}=create();begin(s);s.setAutoFlow(true);clock.forward(10);s.tick();
+ assert(s.askEnd());clock.forward(60);assert.equal(s.tick(),false);assert(s.confirmEnd());
+ assert.equal(s.stage,'summary');assert.equal(s.completed,1);assert.equal(s.skipped,0);
+ assert.equal(s.autoCountdown,null);assert(s.reset());assert.equal(s.autoFlow,false);
+});
