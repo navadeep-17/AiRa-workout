@@ -5,6 +5,8 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import { APP_VERSION, SCHEMA_VERSION, isRequest, isTurn, type Versions, type Result } from '../shared/contracts.js';
 import { mockTurn } from './mock.js';
+import {directorMockTurn} from './director-mock.js';
+import {validateDirectorScreen} from '../shared/director-validation.js';
 import {isCoachRequest} from '../shared/coach.js';
 import {generateCoachCue} from './coach.js';
 import {generatePlan,isPlanRequest} from './plan.js';
@@ -108,7 +110,7 @@ export function createApp(config: Config, transport: typeof fetch = fetch, cliTr
             await delay(input.fault === 'slow' ? 2400 : 350, undefined, { signal: controller.signal });
             if (input.fault === 'request') throw new PublicError('MOCK_REQUEST', 'Simulated model request failure. Retry this turn.');
             if (input.fault === 'schema') throw new PublicError('SCHEMA', 'Simulated invalid component schema. Retry this turn.');
-            turn = mockTurn(input, await readFile(join(config.root, 'examples/wiring.openui'), 'utf8'));
+            turn = input.state.client_events.some(event=>event==='AiRA Director mode enabled') ? directorMockTurn(input) : mockTurn(input, await readFile(join(config.root, 'examples/wiring.openui'), 'utf8'));
           } else if (input.provider === 'claude-cli') {
             const result = await claudeTurn(input, skill, config.claude, controller.signal, cliTransport, cliResolver);
             turn = result.turn; versions.returnedModel = result.returnedModel; versions.runtimeVersion = result.runtimeVersion; versions.restrictionProfile = result.restrictionProfile;
@@ -120,7 +122,7 @@ export function createApp(config: Config, transport: typeof fetch = fetch, cliTr
           if (!isTurn(turn)) throw new PublicError('SCHEMA', 'The response did not match the component schema. Retry this turn.');
           const safe = redactValue({ turn, versions }) as Result;
           const preview = new ScreenDocument();
-          try { if (input.state.ui_state) preview.apply('```openui\n' + input.state.ui_state + '\n```'); preview.apply(safe.turn.reply); }
+          try { if (input.state.ui_state) preview.apply('```openui\n' + input.state.ui_state + '\n```'); preview.apply(safe.turn.reply); if(input.state.client_events.some(event=>event==='AiRA Director mode enabled')) validateDirectorScreen(preview); }
           catch { throw new PublicError('SCHEMA', 'The response has an invalid OpenUI screen. The previous screen is kept. Retry or check your component/skill.'); }
           if (!controller.signal.aborted) json(res, 200, safe);
           else if (!res.destroyed) json(res, 408, { error: 'The request timed out. Retry this turn.' });

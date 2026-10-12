@@ -5,7 +5,7 @@ for(const width of [390,1280]){
  test(`reviewer tour ${width}px: meaningful choices, recovery and honest postcard`,async({page})=>{
   const errors=[];page.on('pageerror',err=>errors.push(err.message));
   await page.setViewportSize({width,height:width<500?844:900});
-  await page.goto('/');
+  await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
   await expect(page.getByRole('button',{name:/Explore the interactive preview/})).toBeVisible();
   await page.getByRole('button',{name:/Explore the interactive preview/}).click();
   await expect(page.getByLabel('Choose the next movement')).toBeVisible();

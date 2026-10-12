@@ -3,8 +3,8 @@ import {test,expect} from '@playwright/test';
 test('new visitor sees meaningful movement plan while developer tools remain optional',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:390,height:844});
- await page.goto('/');
- await expect(page.locator('#studio')).not.toHaveAttribute('open','');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
+ await page.locator('#studio').evaluate(e=>e.open=false);await expect(page.locator('#studio')).not.toHaveAttribute('open','');
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  for(const name of ['Shoulder rolls','March in place','A breathing break','Side steps','Slow arm reach'])
@@ -19,7 +19,7 @@ test('new visitor sees meaningful movement plan while developer tools remain opt
 });
 
 test('a lighter next move changes title, illustration, instructions and actual session summary',async({page})=>{
- await page.clock.install();await page.goto('/');
+ await page.clock.install();await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();
@@ -48,7 +48,7 @@ test('a lighter next move changes title, illustration, instructions and actual s
 });
 
 test('living companion appears and hands-free option remains user-controlled',async({page})=>{
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/make my session/i}).click();
  await page.getByRole('button',{name:/see my plan/i}).click();
  await expect(page.locator('.aira-companion')).toBeVisible();
@@ -61,7 +61,7 @@ test('living companion appears and hands-free option remains user-controlled',as
 
 
 test('Choice Canvas exposes both illustrated futures and a reversible selection',async({page})=>{
- await page.clock.install();await page.goto('/');
+ await page.clock.install();await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();
@@ -83,7 +83,7 @@ test('Choice Canvas exposes both illustrated futures and a reversible selection'
 });
 
 test('Scene Director visibly reflects quiet time, pause, and recovery',async({page})=>{
- await page.clock.install();await page.goto('/');
+ await page.clock.install();await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();
@@ -102,7 +102,7 @@ test('Scene Director visibly reflects quiet time, pause, and recovery',async({pa
 });
 
 test('reviewer preview demonstrates choices and rest without fabricating completed movement',async({page})=>{
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Explore the interactive preview/}).click();
  await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','flow_a');
  await expect(page.locator('.aira-tour-progress')).toContainText('01 / 03');

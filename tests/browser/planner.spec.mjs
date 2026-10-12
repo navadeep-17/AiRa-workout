@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 test('natural-language energy request shapes a moving two-minute plan',async({page})=>{
  const errors=[];page.on('pageerror',err=>errors.push(err.message));
- await page.setViewportSize({width:1280,height:900});await page.goto('/');
+ await page.setViewportSize({width:1280,height:900});await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await expect(page.getByLabel('WHAT DOES YOUR MOMENT LOOK LIKE?')).toBeVisible();
  await page.getByLabel('WHAT DOES YOUR MOMENT LOOK LIKE?').fill('I need an energy boost, I have 2 minutes and plenty of room.');
  await page.getByRole('button',{name:/Shape my session/}).click();
@@ -17,7 +17,7 @@ test('natural-language energy request shapes a moving two-minute plan',async({pa
 });
 
 test('desk reset makes a visibly different compact plan and maintains offline provenance',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/');
+ await page.setViewportSize({width:390,height:844});await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Desk reset/}).click();
  await page.getByRole('button',{name:/Shape my session/}).click();
  await expect(page.locator('.aira-plan-provenance')).toContainText('SMALL SPACE');
@@ -28,7 +28,7 @@ test('desk reset makes a visibly different compact plan and maintains offline pr
 });
 
 test('unsupported medical symptom does not create a plan',async({page})=>{
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByLabel('WHAT DOES YOUR MOMENT LOOK LIKE?').fill('I am dizzy and feeling unwell');
  await page.getByRole('button',{name:/Shape my session/}).click();
  await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','welcome');

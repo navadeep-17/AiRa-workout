@@ -84,6 +84,10 @@
       "status": "added"
     },
     {
+      "path": "docs/OPENUI_DIRECTOR_V8.md",
+      "status": "added"
+    },
+    {
       "path": "docs/QUALITY_V6.md",
       "status": "added"
     },
@@ -104,11 +108,23 @@
       "status": "added"
     },
     {
+      "path": "src/server/director-mock.ts",
+      "status": "added"
+    },
+    {
       "path": "src/server/plan.ts",
       "status": "added"
     },
     {
       "path": "src/shared/coach.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/shared/director-validation.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/shared/director-welcome.ts",
       "status": "added"
     },
     {
@@ -140,6 +156,10 @@
       "status": "added"
     },
     {
+      "path": "tests/browser/director.spec.mjs",
+      "status": "added"
+    },
+    {
       "path": "tests/browser/movement.spec.mjs",
       "status": "added"
     },
@@ -153,6 +173,10 @@
     },
     {
       "path": "tests/browser/reviewer.spec.mjs",
+      "status": "added"
+    },
+    {
+      "path": "tests/director.test.mjs",
       "status": "added"
     },
     {
@@ -172,7 +196,7 @@
       "status": "added"
     }
   ],
-  "skillHash": "1f22702b2d8c3e7e006be6818f47e513f50a881e9be124eabad94fab04b719c5",
+  "skillHash": "d0ce8ac26b79410e46229bafafab5849099558627403f24ebccf1fcfed36f019",
   "files": {
     ".env.example": "d164c3415ef1d939b776ad09746166ce4eefc1791586d353ca189112f3dc50eb",
     ".gitignore": "2e5bf9b24b8e35f4af719d04fd9354ea6515ce25a21ded012bfda84469ab711f",
@@ -184,10 +208,11 @@
     "docs/HARNESS.md": "6e602568e09c68c9a965885c216abd2bd1356aba3ded7d5202a32d7bd7eab365",
     "docs/IMPLEMENTATION_PLAN_V2.md": "ed7cee5fce7a44beadfbd8024ce22a4e0b9ca31c4df3f21dc8fe3429b714849c",
     "docs/MOVE.md": "9a267d4e486c136614ec95c9afbf150a6cee5c1d925d3531bd7a0c81ad93b8df",
+    "docs/OPENUI_DIRECTOR_V8.md": "fe985f8072694318fa0f2e1b2bedecdb9b949e338dbb51d2996c0c3812c26328",
     "docs/QUALITY_V6.md": "e80261e926051993a5d27f9b63e6eebb4be01c456156eb89d017ac5c7f04c3bf",
     "docs/REVIEWER_EXPERIENCE.md": "15ee06b9b741c103c74e8470f747954c1faa35a0aca5e3a0bc6393311052b6d9",
     "docs/RUNTIMES.md": "865086d2d31d43c6ba631b7106baad35d01c473bc144653fd541f8b950fd6abf",
-    "docs/SUBMISSION_NOTE.md": "1a42d7bead603b1d876ce1c9a05a744fafcbc5da1b3d203bc3ca3946c996b103",
+    "docs/SUBMISSION_NOTE.md": "0fdcea8cffc20bd22de8a92bb3f28476c94109d7faa60482e41947479e41a732",
     "evidence/README.md": "cb2f0e671ea6b1d2ddb8829bc7a64a3feab60f53b5c9b8b809cd37c9d403cc26",
     "examples/wiring.openui": "c9b83ae435f3b96c721da9502a5a77b36052bf5035101d56b58fa215a8e54324",
     "package-lock.json": "ea3dff87ebda23e276a90d9006720a48d2c4e6c8c429bbf80936e9713bb1933d",
@@ -195,15 +220,16 @@
     "playwright.config.mjs": "118aac1c8e8f3d40e9b1562b5b88503a34e22568793357ffe89483108b9a6d65",
     "prompts/context.md": "e4732a5acd27c946e8ee18f967b3d5a7b3de158036be98542fc2f73e46130c73",
     "prompts/system.md": "cda5716bc1d0793b171ec52969e06ac47a1ae771e1cd6a539b11c82b832688c8",
-    "README.md": "458855143226bbcba0471a36150187abcfef93666defd536821ca49b26e59d4a",
+    "README.md": "195283327717fe768d1f99f53cdd1c53b3508bd9481d9fba36f64ef7d9002a81",
     "scripts/build.mjs": "044dc54fed3c9c7ef29a3ad50575fdcabd1aeaa605f70c2e60ceb750cdd1e564",
     "scripts/lint.mjs": "c9132cec1cd4d309853355a196baa76c1bd0b2e94b0c745a008bfc0dbb1916f4",
     "scripts/package.mjs": "57ff07fffe805c5814375e20d9ac4d787d54764357bff40db7c64a6c512b84c6",
-    "skills/workout.md": "1f22702b2d8c3e7e006be6818f47e513f50a881e9be124eabad94fab04b719c5",
-    "src/server/app.ts": "08387a7d3ee2a1f07fff905c676659d71760921741cfcc5fcb0614419018dc5f",
+    "skills/workout.md": "d0ce8ac26b79410e46229bafafab5849099558627403f24ebccf1fcfed36f019",
+    "src/server/app.ts": "02cc88450522c019635fc5288b6546af9434f2323e49bf5485ed40db8c442f07",
     "src/server/cli.ts": "36219d623a44f54a2fa27455e4260eaa17f0e98cfe00092cdd87519c5c929924",
     "src/server/coach.ts": "25727069a1bfc4710d23de6426fa9b82a343e001d9a79e8c6422dfb40a005229",
     "src/server/config.ts": "ed9581c1de0c336a60613949bae8ab2a42e995b92a148c8300764da11847a812",
+    "src/server/director-mock.ts": "949c020fc4962d068acd6a3ea0c64c50735b16b0429d880f2813fff5ce83ed56",
     "src/server/main.ts": "949703463e21f003dd298eaa80d89e09b6ad2475c90569651b7690e746352c2f",
     "src/server/mock.ts": "d589c01b2de6079fa850aed023c84905ff40cf2d92cdbf188042fec44c80025b",
     "src/server/plan.ts": "54c4d2c6019e87c32416b3ea725e032a14a572daa7ddeca8d22b6be410a25a32",
@@ -213,37 +239,41 @@
     "src/shared/coach.ts": "d358a1060041d80944caf6068982840bcabb40be205de58dcf113f0868c71780",
     "src/shared/contracts.ts": "80900b15849f8c1f48ce554a8f7650501f938cb222568b85b81f7b8858a5a0a2",
     "src/shared/controller.ts": "e0496ba4acfc5e73305fc7169d8609e5fea60784a1d86f721641746dfebc3463",
+    "src/shared/director-validation.ts": "5cec85d3b3e9862db2b3f88858ba4c645ced7dc0308d0bfef2cc5bdc3fa8a386",
+    "src/shared/director-welcome.ts": "ac6bb7d5b35cfd309584332073a4ac09bae7c60d48ffbae53dad2fe899de2dbb",
     "src/shared/openui/activity-client-events.ts": "56aebb75885476910a0a5dcf3405a2d33dc3609fd61abdb7fa439a9a8c4209ec",
     "src/shared/openui/document.ts": "b9c1b4720a44f44876d04f0f73e4c4fc707336eb6e7f0937ca7df975d1102d6b",
-    "src/shared/openui/openui-library.ts": "2fe9f278f45488da8a57ec90dda85c0f555fbe72d1e5b6b243a7087c16ad74a9",
+    "src/shared/openui/openui-library.ts": "9db40bac67f9cee4e48e9d6488c9bf71a3b13ba65ac017489a514eba31a086e9",
     "src/shared/openui/openui-model.ts": "631a932cf10fb9ef829ecc9f4f3ef2a42024ebdaac52e6a0212969a7d3fcf836",
     "src/shared/openui/parse-document.ts": "16d949f7ea7a75dce39ea103b809c8399d026d6d371e501729960b30ac239a34",
     "src/shared/openui/run-nav.ts": "207f3a5957ba9f154502535b701048981ea2f4dd1165fbf740bbf5ec703fb516",
     "src/shared/openui/serialize.ts": "34f4ecb5d4efeecb721d17ffebdb6ec2f7b8946c9a8e364be373dc613cdf9ea0",
     "src/shared/openui/timer-store.ts": "3edc69b08716a678d99e699f29b905c3a2ffa2e03eab02132a3a130ecbc03d8f",
-    "src/shared/openui/validate.ts": "a6f5089957be853ab794b12563c0a064d1dc6120c86b8e565f66a5f29acd21a6",
+    "src/shared/openui/validate.ts": "b466497ee0890c5199f949f93b13bd6e6c99b0f0d0d73db161c30e195ce5cc0b",
     "src/shared/redact.ts": "126cf5fb154d1cddd0f3eb8f168e89701e80f524c440c537f4fef5b444431222",
     "src/shared/scene-director.ts": "8497f77181082324b968c8074d6a3e875f956d111b9046a0c513335665d148b6",
     "src/shared/schema.ts": "d466e4028d754be7729b9eedcf395faf2129406782bdc1aa47a2f89533568bcb",
     "src/shared/session-planner.ts": "f1ddcd3992e68efa025d3b759dbf1dfcfe44e5732808dfdfd109efe7e66a6911",
     "src/shared/workout-intents.ts": "0ab79ed44abcf83190aa4e9709c8b8aa53297f6b59e55232ed15d5c8cd8c2ed9",
     "src/shared/workout-session.ts": "9abec5ed365a3e3f76c8ef92afe0a63cfc916796e3d5aa7e99e80d1cb4e049fc",
-    "src/web/app.ts": "671700e2c855943c2aa4c1b2953ecbd8abb288daea51c77254b78c027de54cac",
-    "src/web/components.ts": "1a29fcc167a8cda3a994161be0f099d460e01d57bab72672a9852f948b8a5e7c",
+    "src/web/app.ts": "5745c50f4107fce6255ec096f78815f86e1e2c9aac5d069592642cace147d309",
+    "src/web/components.ts": "d5e35f1c53e9351abbe2a090c4b42e81f94517960486c9757b1e14f3985daa32",
     "src/web/dom.ts": "59352bc4243ecc84610b69098b956fb1ddc794cc1ebe38b9302d1e166694b401",
-    "src/web/index.html": "5d6d783821b1abcdde5e712beb6f5a55bed507d3e940281acc8c904043ef5eb1",
+    "src/web/index.html": "76a9342d850c65bd7bfdc61dc82767604524e53cb89edf58737572a15bbc7d81",
     "src/web/living-companion.ts": "1a9a08ee984d2359b3203b82a9a52e297b1fb1767ee38a9a2691451b39b5033c",
-    "src/web/styles.css": "560a5211211dadbde62e81d6aa709e65df81c331d5c2423bb0876f900a91c0c1",
-    "src/web/workout-view.ts": "b665f08c2ae6e721e34f22864e8a1c2e5c5c56a6a58e7d877f3b8d94faceefa9",
-    "tests/browser/app.spec.mjs": "8ddc2dfea9429bb270fc7a5d729a833cd3227758f72e10e100450281273cf29d",
-    "tests/browser/coach.spec.mjs": "a1f8bb6c093e8a12fd0b82e77a153509bf50f968d6f565186d74891707ef6661",
-    "tests/browser/movement.spec.mjs": "5ba4501cd563c25b843fba4b74eec56e3ed6ae877e66775e2b200817420b37e0",
-    "tests/browser/planner.spec.mjs": "f82fe5304089c5fed7b29bc2792fb773325111d9402b6a7c024225f7dd315658",
-    "tests/browser/quality.spec.mjs": "5e5375c12cfcdc7fc5215f856e949bbe9e196a11bc945e793bfcfb924f27d966",
-    "tests/browser/reviewer.spec.mjs": "bbda7f7f564261c70e0484bab65754719348a55f0d7720e67c089ceb785554b0",
+    "src/web/styles.css": "e0cf5f930985dba869af17cc16655e65d1684e4100cd20443eff260779d37e4c",
+    "src/web/workout-view.ts": "2f2d2591f3a5b8baa575253009557f6db73b87bba4ae6958b0139047ad227b08",
+    "tests/browser/app.spec.mjs": "411b5f3c0b47452f16b2c3acfb9ebab240a719f407087ef5219468a4084bd606",
+    "tests/browser/coach.spec.mjs": "cfa0882ba40c92450cca8f13f68a1d056694704521eab1bcd1b9565df644c22d",
+    "tests/browser/director.spec.mjs": "0f2624e1797df13a46c46f1f5c8711dcd89fbb30895d3fa6642dd23abb571dc2",
+    "tests/browser/movement.spec.mjs": "9527fe091b71738ea8c8fa8fbd9433a93bd36464df8f967b7f802921654ca218",
+    "tests/browser/planner.spec.mjs": "f06c120e64871f7d8cf79d89d1d93553957990a18651bd4b2c5993d51b2b76c8",
+    "tests/browser/quality.spec.mjs": "e88d8d8c8113cb6368e482002f272cc9065e339cac5d4233ee7001f24b6ecce5",
+    "tests/browser/reviewer.spec.mjs": "a96f7c407bc29ec1ab90dcf4987f3fcf9b448ad3fc6022968661b2cdcc7268f3",
     "tests/cli.test.mjs": "2b9bf2e26ab4dcb0b421925eb5bc7281b1d5dc4e98f40097b26cb1a9b2b8a030",
     "tests/core.test.mjs": "df8ff8f84535b40c3e25a5bd5b85210ef6b764808cc7e6a7bfb43a5fb204b133",
-    "tests/http.test.mjs": "ac7cc3e037338357074ec7c1aac48cad6e7251782e6e705c4f8a090926340f38",
+    "tests/director.test.mjs": "462d4b70580f92e00287a4c2354a1b61d71cc7bd9e2dd0c8abc8b5c81b03ceab",
+    "tests/http.test.mjs": "25e6f88dc6f66ff5c2b0da68322017cc9d67ee7a60a93fec95f51ac8c72795dd",
     "tests/package.test.mjs": "31334741b94a966dfa52da9e28d96d77ea451e69c76219fd2e895cd38c2e52c2",
     "tests/scene-director.test.mjs": "b903a20cfcf761939ff9650634e6fa7e31e21d73a9f1f61e12b4e6ef35a71935",
     "tests/session-planner.test.mjs": "bbf59bb8381151284ffc847f443c09007de58a1e2d55825ba125b85f9689a901",

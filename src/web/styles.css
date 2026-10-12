@@ -211,3 +211,46 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 .motion-wrist .move-figure{animation:move-figure-breathe 3.8s ease-in-out infinite}
 .motion-desk .move-figure{animation:move-figure-breathe 3.2s ease-in-out infinite}
 .motion-taps .move-figure{animation-duration:1.8s}
+
+/* V8 · AI-directed scenes rendered by the source OpenUI protocol. */
+body.director-mode .intro{max-width:930px;margin:0 auto;padding:22px 2px 12px}
+body.director-mode .intro h1{font-size:clamp(34px,5vw,52px)}
+body.director-mode .preview{padding:clamp(15px,3vw,30px);background:linear-gradient(150deg,#fcfef9,#f5f8f0);border:1px solid #cadcc9}
+body.director-mode .preview>.panel-heading h2{color:#48735c}
+body.director-mode #screen{min-height:400px;padding:20px clamp(5px,5vw,50px) 24px;display:flex;flex-direction:column;align-items:stretch;gap:8px}
+body.director-mode #screen .block-title{font:400 clamp(32px,5vw,53px)/1.08 Georgia,serif;color:#264734;letter-spacing:-.045em;padding:6px 0 2px}
+body.director-mode #screen .block-description{font-size:16px;color:#5a7363;max-width:620px;padding:4px 0}
+body.director-mode #screen .keyword{padding:6px 0;text-align:left}
+body.director-mode #screen .keyword strong{font-size:13px;letter-spacing:.14em;font-weight:800;color:#47795e}
+body.director-mode #screen .keyword p{display:inline;font-size:12px;margin-left:12px}
+body.director-mode #screen .row{justify-content:flex-start;flex-wrap:wrap}
+body.director-mode #screen .row button{border-radius:999px;background:#e7f1e7;border-color:#bad2bd;color:#305941;min-height:45px}
+body.director-mode #screen .row button:hover{background:#d9e9db}
+.director-bar{display:flex;gap:14px;align-items:center;border-bottom:1px solid #d5e5d5;padding:5px 10px 17px}
+.director-bar strong{font-size:12px;letter-spacing:.14em;color:#355e44}
+.director-bar p{margin:2px 0;font-size:10px;letter-spacing:.05em}
+.director-mark{display:grid;place-items:center;width:39px;height:39px;border-radius:14px;background:#dcefe0;color:#427e55;font-size:27px}
+.director-movement{display:flex;align-items:center;gap:25px;flex-wrap:wrap;margin:9px 0 7px}
+.director-movement .move-art{width:300px;flex:none;min-height:240px}
+.director-instruction{max-width:265px;font-size:18px;line-height:1.6;color:#355b45;font-family:Georgia,serif}
+.director-cue{background:#e6f1e3;border:1px solid #cce2c9;border-radius:18px;padding:17px 20px;color:#366249;font-family:Georgia,serif;font-size:19px;line-height:1.4}
+body.director-mode .timer{padding:10px 15px;border:1px solid #d4e5d4;border-radius:17px;background:#fff}
+body.director-mode .timer h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#60816c}
+body.director-mode .timer strong{font-size:49px;font-weight:500;color:#284932}
+body.director-mode .timer .row{gap:8px}
+body.director-mode .timer button{border-radius:999px;font-size:12px;min-height:38px}
+.director-form{margin:0 clamp(5px,5vw,50px) 12px;padding:12px 16px;border:1px solid #d3e2d1;border-radius:18px;background:#fff}
+.director-form label{font-size:12px;font-weight:700;letter-spacing:.02em;color:#496c57;margin:0 0 9px}
+.director-input-row{display:flex;gap:9px}
+.director-input-row input{flex:1;min-width:0;border:1px solid #c8daca;border-radius:12px;padding:11px 13px;font:inherit;background:#fbfcfa}
+.director-input-row button{border-radius:12px;background:#284c38;border:0;color:white}
+.director-form .micro{margin:8px 0 0}
+.director-mode-switch{display:flex;gap:8px;flex-wrap:wrap;padding:13px 0}
+.director-mode-switch button{border-radius:999px;font-size:12px;background:#fff}
+@media(max-width:600px){body.director-mode #screen{padding:14px 5px;gap:4px}.director-form{margin:0 4px 10px}.director-movement{gap:10px}.director-movement .move-art{width:100%;min-height:170px}.director-instruction{font-size:16px}.director-movement .move-art svg{height:165px}.director-input-row{flex-wrap:wrap}.director-input-row button{width:100%}}
+@media(prefers-reduced-motion:reduce){.director-movement .move-figure{animation:none!important}}
+
+.director-provider-button{margin-left:auto;min-height:34px;padding:6px 12px;border-radius:999px;color:#3d6a50;border-color:#bdd5c1;background:#fff;font-size:11px;white-space:nowrap}
+@media(max-width:490px){.director-bar{flex-wrap:wrap}.director-provider-button{margin-left:0}}
+
+#director-retry{min-height:37px;margin-top:9px;border-radius:999px;background:#f3ebd7;border-color:#e5d4a6;color:#755522;font-size:12px}

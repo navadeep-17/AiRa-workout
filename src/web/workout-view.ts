@@ -12,7 +12,7 @@ function copy(text:string,klass='move-body'){return el('p',text,klass);}
 function group(klass:string,...children:HTMLElement[]){const n=el('div','',''+klass);n.append(...children);return n;}
 function desc(s:WorkoutSession,p:Phase){return `${s.movement(p).title} · ${formatDuration(s.duration(p))}`;}
 /** Trusted, local vector gesture. No images, user content or generated code are rendered. */
-function movementArt(m:Movement,compact=false):HTMLElement {
+export function movementArt(m:Movement,compact=false):HTMLElement {
  const outer=group('move-art'+(compact?' is-compact':'')+' motion-'+m.kind);
  outer.setAttribute('role','img');outer.setAttribute('aria-label',`Line illustration for ${m.title}`);
  const ns='http://www.w3.org/2000/svg';

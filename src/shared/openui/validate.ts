@@ -1,3 +1,4 @@
+import {CATALOG} from '../session-planner.js';
 import { OPENUI_LIBRARY } from './openui-library.js';
 import { callArgsOf, linesById, parseDocument, reachableStatements } from './parse-document.js';
 import { isStatementNode, type StatementNode, type Vocabulary } from './openui-model.js';
@@ -19,6 +20,7 @@ export const propValidators: Record<string, (p: Record<string, unknown>) => bool
   Cue: p => text(p.text),
   FollowUps: p => Array.isArray(p.prompts) && p.prompts.length <= 6 && p.prompts.every(text),
   Workout: p => oneOf(p.stage, ["welcome","setup","preview","settle","flow_a","recovery","flow_b","wind_down","summary"]),
+  Movement: p => typeof p.id === "string" && Object.hasOwn(CATALOG,p.id),
 };
 export function validateProgram(code: string, library: Vocabulary = OPENUI_LIBRARY, validators = propValidators): StatementNode {
   if (code.length > 40000 || code.split('\n').length > 600) throw new Error('Screen program is full. Export and reset.');

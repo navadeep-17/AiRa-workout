@@ -7,7 +7,7 @@ test('model coaching is optional, attributed, and cannot replace or advance the 
  });
  let calls=0;
  await page.route('**/api/coach',route=>{calls++;return route.fulfill({json:{cue:'You set the pace. A little progress is enough.',model:'synthetic-openai',source:'openai-api'}});});
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','setup');
  await page.locator('#studio').evaluate(el=>el.open=true);
@@ -25,7 +25,7 @@ test('model coaching is optional, attributed, and cannot replace or advance the 
 });
 
 test('mobile session remains usable without provider credentials',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/');
+ await page.setViewportSize({width:390,height:844});await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();

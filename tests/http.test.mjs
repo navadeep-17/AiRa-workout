@@ -77,3 +77,62 @@ test('AI plan transport accepts a validated structured response and rejects imag
   }finally{await a.close();}
  }
 });
+
+test('Director /api/turn uses mock OpenUI patches and rejects unsafe live scene components',async()=>{
+ const {directorWelcome}=await import('../dist/shared/director-welcome.js');
+ const {ScreenDocument}=await import('../dist/shared/openui/document.js');
+ const {validateDirectorScreen}=await import('../dist/shared/director-validation.js');
+ const initial=new ScreenDocument();initial.apply(directorWelcome());
+ const input={...body('Quick energy boost'),state:{ui_state:initial.echo(),client_events:['AiRA Director mode enabled']}};
+ const a=await app();
+ try{
+  const response=await post(a,input);assert.equal(response.status,200);const data=await response.json();
+  assert.match(data.turn.reply,/Movement\("marching"\)/);
+  initial.apply(data.turn.reply);validateDirectorScreen(initial);
+ }finally{await a.close();}
+ const config=readConfig({ALLOW_LIVE_API:'true',OPENAI_API_KEY:'fake-only'},process.cwd());
+ const invalidReplies=[
+  '```openui\nmovement_current = Movement("imaginary_move")\n```',
+  '```openui\nextra = Workout("welcome")\nscreen_current = Screen([extra])\n```',
+  '```openui\ntimer_current = Timer("too long", 120)\n```',
+ ];
+ for(const reply of invalidReplies){
+  const transport=async()=>new Response(JSON.stringify({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply})}]}]}));
+  const server=await app(config,transport);
+  try{
+   const complete=new ScreenDocument();complete.apply(directorWelcome());
+   complete.apply('```openui\ntitle_current = Text("Move", "title")\nmovement_current = Movement("marching")\ntimer_current = Timer("March in place", 14)\nscreen_current = Screen([title_current, movement_current, timer_current])\n```');
+   const r=await post(server,{...input,provider:'openai-api',consent:true,state:{ui_state:complete.echo(),client_events:['AiRA Director mode enabled']}});
+   assert.equal(r.status,502);
+  }finally{await server.close();}
+ }
+});
+
+test('consented synthetic live provider may author a valid Director OpenUI scene',async()=>{
+ const {directorWelcome}=await import('../dist/shared/director-welcome.js');
+ const {ScreenDocument}=await import('../dist/shared/openui/document.js');
+ const config=readConfig({ALLOW_LIVE_API:'true',OPENAI_API_KEY:'synthetic-only'},process.cwd());
+ const scene=[
+ '```openui',
+ 'title_current = Text("A new, AI-selected moment", "title")',
+ 'movement_current = Movement("wrist_release")',
+ 'timer_current = Timer("Wrist and finger release", 12)',
+ 'cue_current = Cue("A gentle desk reset.")',
+ 'choices_current = FollowUps(["Make it gentler", "End this session"])',
+ 'screen_current = Screen([title_current, movement_current, timer_current, cue_current, choices_current])',
+ 'root = Screens([screen_current], screen_current)',
+ '```',
+ ].join('\n');
+ let sent;
+ const transport=async(_url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({status:'completed',model:'synthetic-model',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply:'Here is the next scene.\n'+scene})}]}]}));};
+ const a=await app(config,transport);
+ try{
+  const d=new ScreenDocument();d.apply(directorWelcome());
+  const response=await post(a,{...body('I am sitting at my desk'),provider:'openai-api',consent:true,state:{ui_state:d.echo(),client_events:['AiRA Director mode enabled']}});
+  assert.equal(response.status,200);const result=await response.json();
+  d.apply(result.turn.reply);assert.equal(d.current.props.children.find(n=>n.name==='Movement').props.id,'wrist_release');
+  assert.equal(result.versions.returnedModel,'synthetic-model');
+  assert(sent.input.at(-1).content.includes('AiRA Director mode enabled'));
+  assert(sent.instructions.includes('SCENE DIRECTOR'));
+ }finally{await a.close();}
+});

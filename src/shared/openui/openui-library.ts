@@ -12,4 +12,5 @@ export const OPENUI_LIBRARY = {
   Cue: { args: ["text"], required: 1 },
   FollowUps: { args: ["prompts"], required: 1 },
   Workout: { args: ["stage"], required: 1 },
+  Movement: { args: ["id"], required: 1 },
 } as const satisfies Record<string, StatementSpec>;

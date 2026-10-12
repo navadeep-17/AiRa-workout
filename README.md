@@ -1,3 +1,39 @@
+# AiRA / The OpenUI Director — v8
+
+**Default experience:** AI-directed fictional movement scenes authored as validated OpenUI data. This version shifts the product away from a prewritten workout flow. The previous v7 experience is preserved under **Studio → Open legacy v7 workout**; it is not the default.
+
+## The core interaction
+
+Start in offline **Mock** (no key required). Select **Give me a quick energy boost** or **I am at my desk with very little space**. AiRA responds with a single authored scene containing a catalog-backed movement, illustration, trusted simulated timer, short text cue and contextual follow-ups. Start/finish the fictional timer and watch the next OpenUI scene arrive. Ask **No jumping or limited space** or **Make it gentler** and see the movement and scene adapt; a request during recovery preserves recovery time and changes the next movement instead. **Start over** resets cleanly. The screen explicitly distinguishes scripted Mock from a live model.
+
+The **OpenAIAPI** mode is available only with a configured private `.env` and explicit opt-in in **Change AI mode → Studio**. In that mode, the model (not a fixed workout controller) authors the validated OpenUI scene patch. The same safety rules apply: one scene, movement IDs from a fixed catalog, one <=45-second timer, text cues and safe follow-up prompts. JavaScript, generated HTML and physical tracking are never model output. A failed turn retains the previous scene and offers Retry.
+
+### How to run
+
+```sh
+npm ci --ignore-scripts
+npm start
+```
+
+Use **Node.js >=22.18**, and open **http://127.0.0.1:4319**.
+
+### Checks
+
+```sh
+npm run check
+npx playwright install chromium
+npm run test:ui
+npm run package
+```
+
+**Verified in the development environment:** TypeScript, safety lint, **88 Node/unit/HTTP tests**, synthetic live-model transport and schema validation (no real paid provider), and local HTTP 200. **Not verified here:** a completed Playwright browser run or a real authenticated API/CLI call; Chromium navigation timed out in this environment. Run the browser suite on your machine before submission. Written browser checks include desktop/mobile Director scenarios and screenshots.
+
+**Architecture, test scenarios and product reasoning:** [docs/OPENUI_DIRECTOR_V8.md](docs/OPENUI_DIRECTOR_V8.md). **Submission draft:** [docs/SUBMISSION_NOTE.md](docs/SUBMISSION_NOTE.md).
+
+---
+
+## Archived v7 product details (legacy mode)
+
 # Move with AiRA — a workout shaped around your moment (v7)
 
 **AI-first product direction:** The user describes a moment in natural language. AiRA proposes an actual timed session with chosen movements, personalized duration, and space-conscious alternatives—not merely a fixed workout with generated motivational text.
@@ -20,7 +56,6 @@ Visit `http://127.0.0.1:4319` and use **Shape my session**. See [v7 architecture
 
 ---
 
-# Move with AiRA — an adaptive workout moment
 
 **AiRA AI Product Builder assessment** · built on the provided `workout-starter` harness.
 

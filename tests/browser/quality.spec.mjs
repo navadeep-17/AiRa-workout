@@ -4,7 +4,7 @@ test('one scene voice and visible check-in adapt the future without resetting th
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.clock.install();
  await page.setViewportSize({width:390,height:844});
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Make my session/}).click();
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();
@@ -31,7 +31,7 @@ test('optional model cue appears inside the Scene Director without changing the 
   await route.fulfill({json:cfg});
  });
  await page.route('**/api/coach',route=>route.fulfill({json:{cue:'Take this next moment at your own pace.',model:'synthetic-provider'}}));
- await page.goto('/');
+ await page.goto('/');await page.locator('#studio').evaluate(e=>e.open=true);await page.getByRole('button',{name:'Open legacy v7 workout'}).click();
  await page.getByRole('button',{name:/Explore the interactive preview/}).click();
  await page.locator('#studio').evaluate(el=>el.open=true);
  await page.locator('#provider').selectOption('openai-api');
