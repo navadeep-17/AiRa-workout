@@ -3,10 +3,10 @@ import {renderWorkout} from './workout-view.js';
 import type {WorkoutSession} from '../shared/workout-session.js';
 import type { StatementNode } from '../shared/openui/openui-model.js';
 import type { TimerLedger } from '../shared/openui/timer-store.js';
-export type Context = { send: (text:string)=>void; timers: TimerLedger; timerAction: (id:string, action:'start'|'pause'|'reset'|'finish')=>void; updates: (()=>void)[]; paused: boolean; workout?: WorkoutSession; onWorkoutChange?: ()=>void };
+export type Context = { send: (text:string)=>void; timers: TimerLedger; timerAction: (id:string, action:'start'|'pause'|'reset'|'finish')=>void; updates: (()=>void)[]; paused: boolean; workout?: WorkoutSession; onWorkoutChange?: ()=>void; coachState?:{cue:string;model:string;pending:boolean;error:string} };
 // Trusted DOM ports of the source component signatures; no model-generated code.
 export const renderers: Record<string,(node:StatementNode,context:Context)=>HTMLElement> = {
-  Workout: (_node,c) => { if (!c.workout||!c.onWorkoutChange) return el('p','Local workout session not connected.');return renderWorkout(c.workout,c.onWorkoutChange,c.updates); },
+  Workout: (_node,c) => { if (!c.workout||!c.onWorkoutChange) return el('p','Local workout session not connected.');return renderWorkout(c.workout,c.onWorkoutChange,c.updates,c.coachState); },
   Text: ({props:p}) => el(p.variant==='title'?'h3':p.variant==='subtitle'?'h4':'p',String(p.text),'block block-'+String(p.variant??'body')),
   Keyword: ({props:p}) => {const n=el('div','','keyword');n.append(el('strong',String(p.text)));if(p.caption)n.append(el('p',String(p.caption)));return n;},
   Alert: ({props:p}) => el('aside',String(p.text),'block alert'),

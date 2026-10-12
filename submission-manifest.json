@@ -80,6 +80,10 @@
       "status": "added"
     },
     {
+      "path": "docs/QUALITY_V6.md",
+      "status": "added"
+    },
+    {
       "path": "docs/REVIEWER_EXPERIENCE.md",
       "status": "added"
     },
@@ -128,6 +132,10 @@
       "status": "added"
     },
     {
+      "path": "tests/browser/quality.spec.mjs",
+      "status": "added"
+    },
+    {
       "path": "tests/browser/reviewer.spec.mjs",
       "status": "added"
     },
@@ -155,9 +163,10 @@
     "docs/HARNESS.md": "6e602568e09c68c9a965885c216abd2bd1356aba3ded7d5202a32d7bd7eab365",
     "docs/IMPLEMENTATION_PLAN_V2.md": "ed7cee5fce7a44beadfbd8024ce22a4e0b9ca31c4df3f21dc8fe3429b714849c",
     "docs/MOVE.md": "9a267d4e486c136614ec95c9afbf150a6cee5c1d925d3531bd7a0c81ad93b8df",
+    "docs/QUALITY_V6.md": "e80261e926051993a5d27f9b63e6eebb4be01c456156eb89d017ac5c7f04c3bf",
     "docs/REVIEWER_EXPERIENCE.md": "15ee06b9b741c103c74e8470f747954c1faa35a0aca5e3a0bc6393311052b6d9",
     "docs/RUNTIMES.md": "865086d2d31d43c6ba631b7106baad35d01c473bc144653fd541f8b950fd6abf",
-    "docs/SUBMISSION_NOTE.md": "eb74f06fdd0b9e6f42892344de0246d2b0694932141fc1d6a91762a2ebc3463e",
+    "docs/SUBMISSION_NOTE.md": "e965b7c6c949a9f079ad0d4df44de6c493e8111bd5dfe41a412a3d0a3d93f5ee",
     "evidence/README.md": "cb2f0e671ea6b1d2ddb8829bc7a64a3feab60f53b5c9b8b809cd37c9d403cc26",
     "examples/wiring.openui": "c9b83ae435f3b96c721da9502a5a77b36052bf5035101d56b58fa215a8e54324",
     "package-lock.json": "ea3dff87ebda23e276a90d9006720a48d2c4e6c8c429bbf80936e9713bb1933d",
@@ -165,7 +174,7 @@
     "playwright.config.mjs": "118aac1c8e8f3d40e9b1562b5b88503a34e22568793357ffe89483108b9a6d65",
     "prompts/context.md": "e4732a5acd27c946e8ee18f967b3d5a7b3de158036be98542fc2f73e46130c73",
     "prompts/system.md": "cda5716bc1d0793b171ec52969e06ac47a1ae771e1cd6a539b11c82b832688c8",
-    "README.md": "6e823e896462b8ce1f828067c06096b415599807b11b46fe98e3dedf1a329543",
+    "README.md": "453d71eb98d0d352a0a51a1c7d77f62ca3a8a6282cb9517f6400844a83bd3753",
     "scripts/build.mjs": "044dc54fed3c9c7ef29a3ad50575fdcabd1aeaa605f70c2e60ceb750cdd1e564",
     "scripts/lint.mjs": "c9132cec1cd4d309853355a196baa76c1bd0b2e94b0c745a008bfc0dbb1916f4",
     "scripts/package.mjs": "57ff07fffe805c5814375e20d9ac4d787d54764357bff40db7c64a6c512b84c6",
@@ -196,16 +205,17 @@
     "src/shared/schema.ts": "d466e4028d754be7729b9eedcf395faf2129406782bdc1aa47a2f89533568bcb",
     "src/shared/workout-intents.ts": "0ab79ed44abcf83190aa4e9709c8b8aa53297f6b59e55232ed15d5c8cd8c2ed9",
     "src/shared/workout-session.ts": "90de12cda9d1e5566229433cf6ac7c7892d0decc694a87ec202c29e6b3336740",
-    "src/web/app.ts": "2f8d66b74da93c91380a9f7631cd30a8b7d1ab9feec0f71a481f704da506e61b",
-    "src/web/components.ts": "3d123404c86253ebb0b0daaa470102293ecf970ea80e781d04d3d1414153abb8",
+    "src/web/app.ts": "3580802d869079b23e3f69a71f0dc74ecba9cb997d3864ebbfc85f9581187ccb",
+    "src/web/components.ts": "e79ffb136ea4b94ac433b93762faf4ca3732846efea8e2c8f742bc6e107e3bf1",
     "src/web/dom.ts": "59352bc4243ecc84610b69098b956fb1ddc794cc1ebe38b9302d1e166694b401",
     "src/web/index.html": "e996d3a0d00ee45c469abdad2e7e25ce07124bb4852a68303536f5490a6efe35",
     "src/web/living-companion.ts": "1a9a08ee984d2359b3203b82a9a52e297b1fb1767ee38a9a2691451b39b5033c",
-    "src/web/styles.css": "b66ea65894342964e151abb773dc1a6cf5a20917c90e23152dfe3d05a3281817",
-    "src/web/workout-view.ts": "062d3586259ce0d7e8845334f77f5b1de5d94be047055d64112fbf2474d3717b",
+    "src/web/styles.css": "72963c2185a173049162d4a4f109b1a9359c5b09bfadc3427ade66ac48d4b0a9",
+    "src/web/workout-view.ts": "993ef6bf7f6551066c80f0c067563b865d6cb5d9cbf70fc0bffb904e8bd04223",
     "tests/browser/app.spec.mjs": "8ddc2dfea9429bb270fc7a5d729a833cd3227758f72e10e100450281273cf29d",
     "tests/browser/coach.spec.mjs": "a1f8bb6c093e8a12fd0b82e77a153509bf50f968d6f565186d74891707ef6661",
     "tests/browser/movement.spec.mjs": "5ba4501cd563c25b843fba4b74eec56e3ed6ae877e66775e2b200817420b37e0",
+    "tests/browser/quality.spec.mjs": "5e5375c12cfcdc7fc5215f856e949bbe9e196a11bc945e793bfcfb924f27d966",
     "tests/browser/reviewer.spec.mjs": "bbda7f7f564261c70e0484bab65754719348a55f0d7720e67c089ceb785554b0",
     "tests/cli.test.mjs": "2b9bf2e26ab4dcb0b421925eb5bc7281b1d5dc4e98f40097b26cb1a9b2b8a030",
     "tests/core.test.mjs": "df8ff8f84535b40c3e25a5bd5b85210ef6b764808cc7e6a7bfb43a5fb204b133",

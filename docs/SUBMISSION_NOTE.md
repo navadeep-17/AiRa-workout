@@ -19,3 +19,5 @@ I kept the starter's OpenUI parser, trusted component registry, screen navigatio
 
 Best,
 Navadeep
+
+**Final presentation refinement:** I consolidated live-workout coaching into one Scene Director. The contextual check-in now exposes the two illustrated next-movement choices directly during March in place. Optional model-generated text appears in that same scene with attribution and cannot change session state. The reviewer preview now explains each interactive moment clearly. Please update the tested-mode paragraph with actual browser results before sending.

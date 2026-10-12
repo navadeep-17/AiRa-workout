@@ -95,15 +95,16 @@ function render(){
     shortcuts.append(el('span','LOCAL WORKOUT CONTROLS · NO API CALL','micro'));
     for(const command of commands){const chip=el('button',command,'coach-chip') as HTMLButtonElement;chip.type='button';chip.addEventListener('click',()=>send(command));shortcuts.append(chip);}
   }
-  const screens=c.document.screens,index=screens.findIndex(s=>s.key===c.document.cursor),isWorkout=workoutMode(),key=c.document.echo()+String(paused)+(isWorkout?workout.revision:'');
+  const screens=c.document.screens,index=screens.findIndex(s=>s.key===c.document.cursor),isWorkout=workoutMode(),key=c.document.echo()+String(paused)+(isWorkout?workout.revision+coachCue+coachModel+String(coachPending)+coachError:'');
   if(key!==renderKey || !byId('screen').childNodes.length){renderKey=key;updates=[];const surface=byId('screen');surface.replaceChildren();const current=c.document.current;
     if(!current){const n=el('div','','empty');n.append(el('p','A BLANK CANVAS, WITH THE WIRING DONE','eyebrow'),el('h3','Your workout starts here.'),el('p','The provided sample checks the stepper, timer and state. It is not a finished workout design.'));surface.append(n);}
-    else for(const node of current.props.children as StatementNode[])if(node.name!=='Cue')surface.append(renderComponent(node,{send,timers,timerAction,updates,paused,workout,onWorkoutChange:workoutChanged}));
+    else for(const node of current.props.children as StatementNode[])if(node.name!=='Cue')surface.append(renderComponent(node,{send,timers,timerAction,updates,paused,workout,onWorkoutChange:workoutChanged,coachState:{cue:coachCue,model:coachModel,pending:coachPending,error:coachError}}));
     const progress=byId('progress');progress.hidden=isWorkout;progress.replaceChildren();if(screens.length>1)for(let i=0;i<screens.length;i++){const n=el('span','',''+(i===index?'active':i<index?'past':''));n.setAttribute('aria-label',`Screen ${i+1}${i===index?', current':''}`);progress.append(n);}
   }
   byId('navigation').hidden=isWorkout||screens.length<2;byId('position').textContent=`${index+1} / ${screens.length}`;byId<HTMLButtonElement>('back').disabled=paused||index<=0;byId<HTMLButtonElement>('next').disabled=paused;byId('next').textContent=index===screens.length-1?'Finish preview':'Next →';
   byId('pause').hidden=isWorkout;byId<HTMLButtonElement>('pause').disabled=!screens.length;byId('pause').textContent=paused?'Resume preview':'Pause preview';byId('paused').hidden=!paused;
   const cues=(c.document.current?.props.children as StatementNode[]??[]).filter(n=>n.name==='Cue').map(n=>String(n.props.text));byId('spoken').textContent=isWorkout?(coachCue||workout.coachCue):(cues.join(' ')||c.document.prose||'Current-screen Cues appear here as text. No audio is produced.');
+  byId('spoken').parentElement!.hidden=isWorkout;
   byId('coach-origin').textContent=isWorkout?(coachCue?`AI-GENERATED TEXT · ${coachModel} · NO SESSION CHANGES`:'LOCAL SESSION GUIDANCE · NO MODEL CALL'):'ORIGINAL OPENUI FIXTURE · TEXT ONLY';
   byId('coach-feedback').textContent=isWorkout?(coachPending?'AiRA is writing a short coaching response. Your timer keeps running.':coachError):'';
   byId('state-json').textContent=JSON.stringify({ui_state:c.document.echo(),client_events:c.clientEvents,timers:timers.list(),workout:isWorkout?{stage:workout.stage,pace:workout.pace,preset:workout.preset,waiting:workout.waiting,paused:workout.paused,phaseTimers:workout.timers.list(),records:workout.records,changes:workout.changes}:undefined},null,2);byId<HTMLButtonElement>('export').disabled=c.pending||!c.events.length;

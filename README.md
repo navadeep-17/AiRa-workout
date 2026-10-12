@@ -76,3 +76,11 @@ See [docs/CREATIVE_V4.md](docs/CREATIVE_V4.md) for the design rationale and demo
 The welcome screen now offers **Explore the interactive preview**. This fast interactive reviewer path opens the real Choice Canvas during March in place, lets you choose a future movement, jumps to a real breathing-break timer for an extra-ten-seconds demonstration, and closes with a **preview** postcard based only on actual visited phases and decisions. Jumped scenes are recorded as skipped, not as fabricated completions. A clear **Start a full workout** button resets all tour state.
 
 See [docs/REVIEWER_EXPERIENCE.md](docs/REVIEWER_EXPERIENCE.md) for the three-moment script, safeguards and the desktop/mobile screenshot test. The provided harness's static safety policy excludes audio APIs, so voice narration was intentionally deferred. Local Node tests do not substitute for a full Playwright browser run; please verify on the target machine before submission.
+
+## V6 — one companion voice and contextual adaptation
+
+The active workout now presents a **single primary Scene Director** rather than multiple competing AiRA coaching panels. An optional, explicitly consented OpenAI text response is displayed *inside* that director with provider attribution; it never changes timers or progression, and errors leave the local scene usable. The original text panel remains available for the unmodified wiring fixture.
+
+During March in place, a compact **Your pace, your choice** check-in introduces the two illustrated next-movement paths. The current countdown is preserved; users can preview the alternative before choosing and switch back until the next phase begins. The quick reviewer tour also explains its three moments with visible step guidance. No physical activity is tracked.
+
+`tests/browser/quality.spec.mjs` adds on-device assertions for mobile overflow, one primary coaching panel, the contextual check-in, non-resetting adaptation, and a **synthetic** optional AI coaching response. Browser E2E tests remain pending until executed successfully on a machine that can navigate the local server; Node tests do not substitute for visual verification.

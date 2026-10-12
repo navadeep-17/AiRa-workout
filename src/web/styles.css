@@ -176,3 +176,17 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 .move-scene:has(.aira-tour-progress) .move-sim-badge{font-size:9px;letter-spacing:.05em}
 @media(max-width:700px){.aira-tour-invite{align-items:stretch;flex-direction:column;padding:16px;gap:13px}.aira-tour-invite .move-button{min-width:0;max-width:none;width:100%}.aira-tour-progress{align-items:flex-start;flex-wrap:wrap}.aira-tour-progress .move-button{margin-left:auto}}
 @media(prefers-reduced-motion:reduce){.aira-tour-invite,.aira-tour-next{transition:none!important;animation:none!important}}
+
+
+/* V6 / one companion voice and the check-in moment. */
+.aira-checkin{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 17px;margin:14px 0;border:1px solid #c6ddcd;border-radius:18px;background:linear-gradient(110deg,#f8fcf5,#eaf5e9)}
+.aira-checkin-copy{min-width:0;flex:1}
+.aira-checkin-label{font-size:10px;letter-spacing:.12em;font-weight:850;color:#3d7957;margin:0}
+.aira-checkin .move-small{font-size:12px;line-height:1.45;margin:4px 0 0;color:#617d67}
+.aira-checkin-action{flex-shrink:0;max-width:235px;white-space:normal;min-height:48px}
+.aira-tour-copy{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;min-width:0}
+.aira-tour-copy .move-small{margin:0;color:#517461;font-size:12px;line-height:1.35}
+.aira-director{margin-top:14px}
+.aira-director-copy{flex:1}
+@media(max-width:650px){.aira-checkin{flex-direction:column;align-items:stretch;gap:10px;padding:13px}.aira-checkin-action{max-width:none;width:100%}.aira-tour-progress{gap:8px}}
+@media(prefers-reduced-motion:reduce){.aira-checkin{animation:none!important;transition:none!important}}
