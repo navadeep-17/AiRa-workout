@@ -1,32 +1,38 @@
-# AiRA workout starter
+# Move with AiRA — an adaptive workout moment
 
-A local browser harness derived from AiRA API and AiRA client code. Read the short assignment in [docs/EXERCISE.md](docs/EXERCISE.md).
+**AiRA AI Product Builder assessment** · built on the provided `workout-starter` harness.
 
-## Run
+> AiRA handles the flow. You set the pace.
 
-Requires Node.js 22.18 or later and npm. From this directory:
+Instead of a workout dashboard, this is a complete *fictional* five-phase guided experience. Select time and pace, see your flow, begin, pause or extend recovery, lighten the next interval, skip safely or finish early. The closing screen records what actually happened rather than claiming activity was performed.
+
+## Run locally
+
+Requires Node.js **22.18+** and npm. From the `workout-starter` directory:
 
 ```sh
 npm ci --ignore-scripts
 npm start
 ```
 
-Open http://127.0.0.1:4319. Stop with Ctrl+C. Change `PORT` in a local `.env` if needed.
+Open **http://127.0.0.1:4319**. It starts in **Mock** with no provider credentials needed. Click **Make my session** to begin. Recommended evaluator path: Quick → Steady → See my plan → Start. Every countdown is a simulation; finishing one phase displays a clear Continue button.
 
-The app starts in Mock and needs no account or key. **Load wiring sample** displays generic component examples. Mock accepts `/demo`, `next`, `back`, and `change value to 6`; it does not interpret the skill or arbitrary messages. Use your editor to change files. Prompt/skill edits load on the next request; source changes need a restart and browser reload.
+To show the original starter fixture, use **Load original wiring sample** in the guidance lab. **Reset run** restores the Move welcome screen.
 
-## Files
+## Features
 
-- `skills/workout.md`: your interaction instructions.
-- `prompts/`: output protocol and current-turn context.
-- `src/shared/openui/`: parser, component registry, validation, navigation, timers and serialization.
-- `src/web/`: browser renderers and presentation.
-- `src/server/`: prompt loading, local HTTP server, mock and model adapters.
-- `examples/wiring.openui`: generic offline fixture.
+- Nine coherent OpenUI screens with a local trusted state machine and five timed phases.
+- Two total-length presets (75s / 105s), and Steady / Gentle pacing.
+- Recovery +10s without timer reset, capped at +30s.
+- Upcoming interval shortening / undo with a real updated timer and plan.
+- Explicit pause/resume, skipping and early-exit confirmation.
+- Accurate completion records and changes summary.
+- Warm responsive design, reduced motion, keyboard focus, readable timer and true offline operation.
+- Original provider adapters, builder state inspection, run export and generic fixture retained.
 
-See [AiRA harness](docs/HARNESS.md) for the included plumbing and [runtime setup](docs/RUNTIMES.md) for optional model adapters.
+See [Product, architecture and tested modes](docs/MOVE.md), [Exercise](docs/EXERCISE.md), and [Harness](docs/HARNESS.md).
 
-## Check and package
+## Test and package
 
 ```sh
 npm run check
@@ -35,8 +41,4 @@ npm run test:ui
 npm run package
 ```
 
-The browser checks start a mock server on port 4320. To use an installed Chrome instead, set `PLAYWRIGHT_CHROME_PATH` to its absolute executable path.
-
-Packaging writes `output/workout-source.zip` locally. It includes source and records changes against this starter's baseline; it excludes `.env`, dependencies, build output and repository history. It does not submit anything. Builder tools can export a local run; optional run JSON files can be placed in `runs/`. Keep credentials out of source and exports.
-
-The supplied tests exercise local harness behavior with fake transports. Live OpenAI and Claude requests have not been verified. This browser slice is not the production AiRA application.
+The source export is `output/workout-source.zip`; `.env`, packages, compiled artifacts, history and credentials are excluded. A live OpenAI or Claude session is optional, requires explicit local enablement and consent, and has not been tested in this submission. No real voice, body sensing, or medical/exercise recommendations are provided.

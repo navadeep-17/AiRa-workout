@@ -23,6 +23,17 @@ export class TimerLedger {
     const resuming = e.status !== 'running';
     this.entries.set(id, { ...e, startedAt: resuming ? this.now() : null, startRemaining: this.remainingOf(e), status: resuming ? 'running' : 'paused' });
   }
+  // Add time to an in-progress timer without restarting its clock or losing elapsed time.
+  extend(id: string, extraSeconds: number): boolean {
+    const e = this.entries.get(id);
+    if (!e || !Number.isInteger(extraSeconds) || extraSeconds <= 0 || extraSeconds > 60 || e.status === 'done') return false;
+    const remaining = this.remainingOf(e);
+    const status = e.status;
+    this.entries.set(id, { ...e, seconds: e.seconds + extraSeconds,
+      startRemaining: remaining + extraSeconds,
+      startedAt: status === 'running' ? this.now() : null });
+    return true;
+  }
   reset(id: string) { const e = this.entries.get(id); if (e) this.entries.set(id, { ...e, startedAt: null, startRemaining: e.seconds, status: 'stopped' }); }
   list(): TimerListEntry[] {
     return [...this.entries].map(([id,e]) => {
