@@ -1,14 +1,14 @@
-# Suggested note to accompany the source ZIP
+# Draft submission note — verify the browser before sending
 
 Hi Vishnu,
 
-I built **Move with AiRA**, a fictional workout experience that adapts to the user's pace instead of making them manage a fitness dashboard. The journey covers choosing a session, previewing a five-part plan, guided timed phases, context-aware recovery, and an accurate completion summary.
+I built **Move with AiRA**, a short fictional movement session designed to help people stay in their activity rather than manage an interface. The user chooses time and pace, previews five named movements (from Shoulder rolls to Slow arm reach), and sees one instruction, illustrated gesture and timer at a time. Each transition is explicit so the user stays in control.
 
-The interaction I focused on most is **“Give me ten more seconds.”** During recovery, the timer genuinely gains time without losing its elapsed progress. The user can also make an upcoming interval lighter, pause/resume, skip with confirmation, or end the session early. These actions change the actual trusted session state, not just the on-screen text.
+The interaction I refined most is **"I need an easier next move."** During the first movement or recovery, AiRA changes the upcoming **Side steps** into **Gentle weight shifts**: the preview, instruction, illustrated pose, future countdown and final session record all change together. The user can undo this before the next activity. Recovery can also be extended by ten seconds without resetting elapsed progress. Pause, skip and early exit are guarded and reflected accurately in the summary.
 
-I preserved the supplied OpenUI parser and nine screen nodes, added a validated `Workout(stage)` component and a small session state machine, and retained the original wiring fixture and builder tools. The app works offline with no account or API key.
+I kept the starter's OpenUI parser, trusted component registry, screen navigation, timer ledger, local server and provider adapters. The main experience works offline without credentials. Optional, explicitly consented OpenAI text coaching receives only allowlisted simulated context including the active movement. It cannot change the workout timer or progression. The generic sample and builder harness remain available inside an expandable Studio.
 
-**Modes tested:** Mock/local deterministic session and compiled UI through an offline browser with a synthetic provider configuration; TypeScript checking, safety lint and 47 Node tests pass. **Not tested:** live OpenAIAPI / ClaudeCLI provider calls, actual audio, hardware sensing, or full HTTP-served Playwright tests (the available browser environment blocked localhost navigation). Screenshots and run instructions are in the ZIP.
+**Modes/tests confirmed so far:** deterministic Mock session logic, TypeScript validation, safety lint, 61 Node tests and local HTTP service. **Not yet verified:** complete Chromium/Playwright journey (this environment blocks localhost browser navigation), real OpenAIAPI/ClaudeCLI calls, audio, motion tracking or production integration.
 
 Best,
 Navadeep

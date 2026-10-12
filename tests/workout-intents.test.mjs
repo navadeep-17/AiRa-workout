@@ -18,7 +18,7 @@ test('natural-language adaptation really changes an active recovery timer',()=>{
  assert.equal(say(s,'I need more rest').intent,'extend');
  assert.equal(s.recoveryAdded,10);assert.equal(s.timer().remaining,25);
  assert.equal(say(s,'slow down').intent,'lighten');assert.equal(s.duration('flow_b'),12);
- assert.match(say(s,"what’s next?").message,/Keep your rhythm.*0:12/);
+ assert.match(say(s,"what’s next?").message,/Gentle weight shifts.*0:12/);
  assert.equal(say(s,'restore').intent,'restore');assert.equal(s.duration('flow_b'),20);
 });
 
@@ -28,7 +28,7 @@ test('pause, resume, skip, and continue are guarded and require confirmation',()
  assert.equal(say(s,'skip phase').intent,'skip');assert.equal(s.modal,'skip');
  assert.equal(s.records.length,0);assert(s.dismissModal());assert.equal(s.modal,null);
  forward(10);assert.equal(s.stage,'flow_a');
- assert.match(say(s,'what is next').message,/Take a breath/);
+ assert.match(say(s,'what is next').message,/A breathing break/);
 });
 
 test('unsupported text stays in local workout and offers explicit safe controls',()=>{

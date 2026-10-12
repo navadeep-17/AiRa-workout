@@ -1,4 +1,4 @@
-import {PHASE_INFO,PHASE_KEYS,formatDuration,WorkoutSession} from './workout-session.js';
+import {PHASE_KEYS,formatDuration,WorkoutSession} from './workout-session.js';
 
 export type WorkoutIntentResult={intent:string;message:string;changed:boolean};
 /** Detect a local control command without mutating the session. Model calls are for questions only. */
@@ -18,11 +18,11 @@ export function handleWorkoutIntent(session:WorkoutSession,input:string):Workout
   const answer=(message:string)=>session.respond(message);
   if(/\b(what(?:'s| is) next|next phase|up next)\b/.test(text)){
     intent='next-preview';const next=session.activePhase?PHASE_KEYS[session.phaseIndex+1]:undefined;
-    changed=answer(next?`Up next: ${PHASE_INFO[next].name} (${formatDuration(session.duration(next))}).`:
+    changed=answer(next?`Up next: ${session.movement(next).title} (${formatDuration(session.duration(next))}).`:
       session.stage==='summary'?'The session has ended. Choose Try another session to start again.':'Your next phase appears in the plan preview.');
   }else if(/\b(how much time|time left|how long|remaining|progress|where am i)\b/.test(text)){
     intent='progress';const t=session.timer();
-    changed=answer(t?`${PHASE_INFO[session.activePhase!].name}: ${formatDuration(t.remaining)} left. ${session.completed} of 5 phases completed.`:
+    changed=answer(t?`${session.activeMovement!.title}: ${formatDuration(t.remaining)} left. ${session.completed} of 5 phases completed.`:
       session.stage==='summary'?`${session.completed} completed, ${session.skipped} skipped; ${formatDuration(session.elapsed)} simulated time.`:
       `Your selected plan is ${formatDuration(session.totalPlanned)} across five phases.`);
   }else if(/\b(undo|restore|original pace|go back to normal)\b/.test(text)){
@@ -34,7 +34,7 @@ export function handleWorkoutIntent(session:WorkoutSession,input:string):Workout
   }else if(/\b(lighter|slower|slow down|less intense|easier|gentler|low energy|tired)\b/.test(text)){
     intent='lighten';changed=session.lightenNext();if(!changed)changed=answer(session.lightened?
       'Your next flow is already shortened. You can undo that change before it starts.':
-      'You can shorten the second flow during the first flow or recovery. To stop now, choose Pause.');
+      'You can choose an easier next movement during the first flow or recovery. To stop now, choose Pause.');
   }else if(/^(?:pause|pause (?:the )?(?:timer|session|workout)|hold on|wait)$/i.test(text)){
     intent='pause';changed=!session.paused&&session.togglePause();if(!changed)changed=answer(session.paused?'Already paused. Resume when you are ready.':'Pause is available during a running phase.');
   }else if(/^(?:resume|resume (?:the )?(?:timer|session|workout)|i(?:'m| am) ready|keep going)$/i.test(text)){

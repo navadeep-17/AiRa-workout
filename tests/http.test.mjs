@@ -10,7 +10,7 @@ test('disconnect aborts provider request',async()=>{let started,aborted;const se
 
 test('opt-in coaching endpoint validates context and token without spending quota',async()=>{
  const a=await app();
- const input={provider:'openai-api',consent:true,question:'How can I stay focused?',context:{stage:'flow_a',pace:'steady',preset:'quick',paused:false,waiting:false,remainingSeconds:14,completed:1,skipped:0,lightened:false,recoveryAdded:0}};
+ const input={provider:'openai-api',consent:true,question:'How can I stay focused?',context:{stage:'flow_a',pace:'steady',preset:'quick',paused:false,waiting:false,remainingSeconds:14,completed:1,skipped:0,lightened:false,recoveryAdded:0,movement:'March in place'}};
  const postCoach=(data,token=a.cfg.token)=>fetch(a.url+'/api/coach',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':token},body:JSON.stringify(data)});
  try{
   assert.equal((await postCoach(input,'wrong')).status,403);
@@ -32,7 +32,7 @@ test('coaching returns short generated text only; OpenUI and API keys never cros
   return new Response(JSON.stringify({status:'completed',model:'gpt-4.1-mini',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({cue:'One moment at a time. Take it at your own pace.'})}]}]}),{status:200});
  };
  const a=await app(config,transport);
- const data={provider:'openai-api',consent:true,question:'How should I approach this moment?',context:{stage:'flow_b',pace:'gentle',preset:'quick',paused:false,waiting:false,remainingSeconds:10,completed:3,skipped:0,lightened:true,recoveryAdded:10}};
+ const data={provider:'openai-api',consent:true,question:'How should I approach this moment?',context:{stage:'flow_b',pace:'gentle',preset:'quick',paused:false,waiting:false,remainingSeconds:10,completed:3,skipped:0,lightened:true,recoveryAdded:10,movement:'Gentle weight shifts'}};
  try{
   const r=await fetch(a.url+'/api/coach',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':a.cfg.token},body:JSON.stringify(data)});
   assert.equal(r.status,200);const payload=await r.json();assert.equal(payload.cue,'One moment at a time. Take it at your own pace.');assert.equal(payload.source,'openai-api');assert.equal(payload.model,'gpt-4.1-mini');assert.equal(called,1);assert(!JSON.stringify(payload).includes('fake-coach-secret'));
@@ -41,7 +41,7 @@ test('coaching returns short generated text only; OpenUI and API keys never cros
 
 test('coaching rejects malformed provider replies; session endpoint remains independent',async()=>{
  const config=readConfig({ALLOW_LIVE_API:'true',OPENAI_API_KEY:'fake-coach-secret'},process.cwd());
- const data={provider:'openai-api',consent:true,question:'Any encouraging words?',context:{stage:'recovery',pace:'steady',preset:'quick',paused:false,waiting:false,remainingSeconds:10,completed:2,skipped:0,lightened:false,recoveryAdded:0}};
+ const data={provider:'openai-api',consent:true,question:'Any encouraging words?',context:{stage:'recovery',pace:'steady',preset:'quick',paused:false,waiting:false,remainingSeconds:10,completed:2,skipped:0,lightened:false,recoveryAdded:0,movement:'March in place'}};
  for(const message of ['not JSON',JSON.stringify({cue:'bad'.repeat(100)})]){
   const a=await app(config,async()=>new Response(JSON.stringify({status:'completed',output:[{type:'message',content:[{type:'output_text',text:message}]}]})));
   try{const r=await fetch(a.url+'/api/coach',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':a.cfg.token},body:JSON.stringify(data)});assert.equal(r.status,502);assert(!(await r.text()).includes('fake-coach-secret'));}finally{await a.close();}

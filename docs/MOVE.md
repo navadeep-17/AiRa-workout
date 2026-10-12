@@ -37,3 +37,13 @@ The active phase now renders coaching copy from trusted session state rather tha
 The model never owns the workout state. `POST /api/coach` is a separate, local-token-protected endpoint accepting only a short question and an allowlisted simulated context (phase, time, pace, pause, completed/skipped counts and adjustments). It requires `openai-api`, locally enabled API credentials and explicit consent. The OpenAI Responses API returns a short structured `cue`, rendered as inert text with provider attribution. It cannot emit OpenUI changes, tools or JavaScript. The local state machine remains usable while the model is pending or errors. A phase change, reset, consent removal or provider switch aborts/invalidates stale replies. Commands like “pause”, “more rest”, and “slow down” remain local in every provider mode.
 
 Provider tests use an injected synthetic fetch response, not real OpenAI or Claude credentials. No real model request has been executed by the author. Mock remains the default and remains fully offline.
+
+## v2 — movement-first experience
+
+The five trusted stages remain keyed `settle`, `flow_a`, `recovery`, `flow_b`, and `wind_down`, retaining OpenUI and current timer semantics. The displayed activities are now **Shoulder rolls**, **March in place**, **A breathing break**, **Side steps**, and **Slow arm reach**. Every activity has a specific instruction, a simple original SVG-style vector figure rendered by the trusted DOM renderer, and contextual text guidance.
+
+**One coherent change:** during March in place or Recovery, "Make next flow lighter" changes the *actual upcoming activity* from Side steps to **Gentle weight shifts** with its own instruction/illustration and a shorter countdown, not just a caption. Undo restores the original. Session records now snapshot the movement title on completion or skip, so summary content describes what was offered at the time, not a future/default plan. Rest +10 still preserves elapsed time.
+
+The main preview leads the page. An expandable Studio contains the opt-in provider settings, text commands, legacy wiring fixture and builder tools without removing test access. Local mock simulation remains functional with no credentials; the optional model receives a validated current `movement` name, but it still has no authority to change trusted state.
+
+**v2 verification:** 61 Node tests pass, as do TypeScript and safety lint; Chromium blocks localhost navigation in this execution environment, so fresh v2 Playwright/browser screenshots require a local run. A new browser specification covers mobile clarity and the fully adapted golden path. Live provider modes were not tested with real credentials.

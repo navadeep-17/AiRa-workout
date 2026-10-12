@@ -76,3 +76,30 @@ test('contextual coaching is consistent with selected pace and actual paused sta
  assert.match(s.coachCue,/gentle/i);assert(s.togglePause());assert.match(s.coachCue,/Paused/);
  assert(s.togglePause());clock.forward(10);assert(s.tick());assert.match(s.coachCue,/complete/i);
 });
+
+test('specific activities and lighter alternative change instructions and recorded movement',()=>{
+ const {s,clock}=create();
+ assert.equal(s.movement('settle').title,'Shoulder rolls');
+ assert.equal(s.movement('flow_a').title,'March in place');
+ assert.match(s.movement('flow_b').instruction,/Step to one side/);
+ begin(s);finishPhase(s,clock);assert(s.lightenNext());
+ assert.equal(s.movement('flow_b').title,'Gentle weight shifts');
+ assert.match(s.movement('flow_b').instruction,/Shift your weight/);
+ finishPhase(s,clock);finishPhase(s,clock);finishPhase(s,clock);
+ assert.equal(s.records.at(-1).movementTitle,'Gentle weight shifts');
+ assert.equal(s.records.at(-1).seconds,12);
+});
+test('restoration returns the original named movement and accurate session record',()=>{
+ const {s,clock}=create();begin(s);finishPhase(s,clock);assert(s.lightenNext());assert(s.undoLighten());
+ assert.equal(s.movement('flow_b').title,'Side steps');
+ finishPhase(s,clock);finishPhase(s,clock);finishPhase(s,clock);
+ assert.equal(s.records.at(-1).movementTitle,'Side steps');
+});
+
+test("movement snapshots match the user's chosen replacement after ending early",()=>{
+ const {s,clock}=create();begin(s);finishPhase(s,clock);assert(s.lightenNext());
+ finishPhase(s,clock);finishPhase(s,clock);assert.equal(s.activeMovement.title,'Gentle weight shifts');
+ assert(s.askEnd());assert(s.confirmEnd());
+ assert.equal(s.records.at(-1).movementTitle,'Gentle weight shifts');
+ assert.equal(s.records.at(-1).outcome,'skipped');
+});

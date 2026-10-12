@@ -10,6 +10,7 @@ test('model coaching is optional, attributed, and cannot replace or advance the 
  await page.goto('/');
  await page.getByRole('button',{name:/Make my session/}).click();
  await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','setup');
+ await page.locator('#studio').evaluate(el=>el.open=true);
  await page.locator('#provider').selectOption('openai-api');
  await expect(page.locator('#consent-wrap')).toBeVisible();
  await page.locator('#consent').check();
@@ -29,6 +30,7 @@ test('mobile session remains usable without provider credentials',async({page})=
  await page.getByRole('button',{name:/See my plan/}).click();
  await page.getByRole('button',{name:/Start .*session/}).click();
  await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','settle');
+ await page.locator('#studio').evaluate(el=>el.open=true);
  await page.locator('#message').fill('pause');await page.locator('#send').click();
  await expect(page.locator('.move-scene')).toContainText('PAUSED');
  await page.locator('#message').fill('resume');await page.locator('#send').click();

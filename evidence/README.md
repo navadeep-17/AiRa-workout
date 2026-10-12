@@ -1,10 +1,7 @@
-# Screenshot evidence
+# Verification evidence status — v2
 
-These four screenshots were captured from the newly compiled browser UI and CSS in a headless offline browser with a synthetic `/api/config` response, because Chromium in this environment blocked direct localhost page navigation. They are **not** live-provider, production-AiRA or server-to-browser integration evidence.
+The committed v2 experience uses new movement visuals and a collapsed optional studio. **Earlier screenshots from the v1 timer UI do not verify v2, and must not be presented as v2 evidence.**
 
-- `01-welcome.png` — entry and call-to-action
-- `02-adaptive-recovery.png` — recovery after +10 s and next-phase reduction
-- `03-summary.png` — adapted full five-phase simulation (1:17 total)
-- `04-mobile.png` — 390 px viewport, no horizontal overflow
+Validated in the build environment: TypeScript and safety lint, 61 Node unit/HTTP tests and local HTTP server. Fresh browser screenshots and Playwright E2E still need to be captured and verified on the target machine; Chromium returned `ERR_BLOCKED_BY_ADMINISTRATOR` for local navigation in this environment.
 
-The TypeScript program, OpenUI validation and 47 Node tests were run separately. The optional live OpenAIAPI and ClaudeCLI modes were **not** exercised.
+To collect truthful evidence: `npm run build && npm run test:ui` with Chromium installed, then manually review desktop and 390px mobile. Record actual mode tests in `docs/SUBMISSION_NOTE.md`; never claim physical workout, sensors, voice or live AI without testing them.

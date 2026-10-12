@@ -3,7 +3,7 @@ import {mkdir} from 'node:fs/promises';
 const shots='evidence/screenshots';
 async function send(page,text){await page.locator('#message').fill(text);await page.locator('#send').click();await expect(page.locator('#pending')).toBeHidden();}
 async function demo(page){await page.locator('#sample').click();await expect(page.locator('[data-statement="count1"]')).toContainText('8');}
-test.beforeEach(async({page})=>{await page.goto('/');await expect(page.locator('#mode')).toHaveText('MOCK · NO MODEL CALLS');});
+test.beforeEach(async({page})=>{await page.goto('/');await page.locator('#studio').evaluate(el=>el.open=true);await expect(page.locator('#mode')).toHaveText('MOCK · NO MODEL CALLS');});
 test('source stepper, text cues, value patch and local timer continuity',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await mkdir(shots,{recursive:true});await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:shots+'/01-start.png',fullPage:true});await demo(page);
  await expect(page.locator('#spoken')).toContainText('current screen');await send(page,'next');await expect(page.locator('#position')).toHaveText('2 / 4');await page.getByRole('button',{name:'Start simulation',exact:true}).click();

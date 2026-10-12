@@ -28,3 +28,75 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 #coach-feedback{min-height:1em;margin:8px 0 0;color:#795c36;line-height:1.45}
 #consent-wrap{line-height:1.45}
 @media(max-width:650px){#coach-origin{font-size:10px}}
+
+/* Consumer-first v2 — the experience leads; the debugging harness lives below. */
+.workspace{display:block;max-width:990px;margin:0 auto}
+.preview{width:100%;padding:20px;border-radius:30px;box-shadow:0 22px 70px rgba(27,64,43,.08)}
+#screen{min-height:540px}
+.preview .panel-heading{margin-bottom:4px}
+.preview .panel-heading h2{font-size:10px;letter-spacing:.2em}
+.studio{max-width:990px;margin:22px auto 0;border:1px solid #cbdacf;border-radius:22px;background:#f3f7f1;overflow:hidden}
+.studio>summary{list-style:none;display:flex;align-items:center;gap:16px;cursor:pointer;padding:20px 24px;color:#335b45}
+.studio>summary::-webkit-details-marker{display:none}
+.studio>summary strong{display:block;font-size:15px;letter-spacing:-.01em}
+.studio>summary small{display:block;color:#6f8174;font-size:12px;margin-top:3px}
+.studio-icon{width:40px;height:40px;display:grid;place-items:center;font-size:24px;background:#dceadd;border-radius:13px}
+.studio-arrow{margin-left:auto;font-size:24px;transition:transform .18s ease}
+.studio[open] .studio-arrow{transform:rotate(180deg)}
+.studio-content{padding:0 22px 20px}
+.studio .provider-panel{border-top:1px solid #d5e1d5;margin:0 0 14px;padding:14px 2px;flex-wrap:wrap}
+.studio .conversation{width:100%;border-radius:18px;min-height:0;display:block;background:#fff}
+.studio .conversation #transcript{height:120px;max-height:220px}
+.studio .builder{margin:12px 0 0}
+.move-scene{min-height:620px;background:radial-gradient(circle at 88% 11%,#deece0 0,transparent 38%),linear-gradient(145deg,#fcfdf8,#f0f6ec)}
+.move-scene-body{max-width:750px}
+.move-phase-title{font-size:clamp(34px,4vw,48px)}
+.move-phase-note{font-size:16px;font-weight:500;line-height:1.4;max-width:560px}
+.move-plan-item{background:#ffffffb8;border:1px solid #e3ebe1;padding:12px 14px}
+.move-plan-item .move-small{max-width:470px}
+.move-plan-copy strong{font-size:16px}
+.move-plan-item.is-adjusted{background:#e2efdf;border-color:#70a37f}
+.move-stage-center{display:flex;justify-content:center;align-items:center;gap:clamp(10px,3vw,35px);min-height:238px;margin:6px 0 12px}
+.move-art{width:min(100%,290px);min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #d3e3d5;border-radius:22px;background:linear-gradient(165deg,#ebf5e9,#e5f0e4);overflow:hidden;flex:1}
+.move-art svg{display:block;width:100%;height:210px;max-width:280px}
+.move-art-rhythm{font-size:10px;letter-spacing:.18em;font-weight:800;color:#57826a;padding:0 0 15px}
+.move-stage-timing{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.move-stage-timing .move-dial{width:clamp(155px,19vw,196px);height:clamp(155px,19vw,196px);padding:9px}
+.move-stage-timing .move-dial-number{font-size:clamp(40px,4.7vw,54px)}
+.move-stage-timing .move-phase-cue{font-size:16px;line-height:1.35;margin:12px 2px 0;max-width:270px}
+.move-context-note{display:flex;align-items:center;gap:18px;border:1px solid #dbe8dc;background:#ffffffa8;padding:12px 16px;border-radius:14px;margin:4px 0 11px}
+.move-context-label{font-size:10px;letter-spacing:.11em;color:#436c51;font-weight:750;white-space:nowrap}
+.move-context-note .move-small{font-size:13px;margin:0;line-height:1.4}
+.move-figure{transform-origin:160px 110px;animation:move-figure-sway 2.5s ease-in-out infinite}
+.motion-march .move-figure{animation-duration:1.3s}
+.motion-breath .move-figure{animation:move-figure-breathe 4s ease-in-out infinite}
+.motion-steps .move-figure{animation-duration:1.9s}
+.motion-reach .move-figure{animation:move-figure-breathe 3.5s ease-in-out infinite}
+@keyframes move-figure-sway{0%,100%{transform:translateX(-4px) rotate(-2deg)}50%{transform:translateX(4px) rotate(2deg)}}
+@keyframes move-figure-breathe{0%,100%{transform:scale(.975)}50%{transform:scale(1.025)}}
+@media(max-width:760px){
+ .intro{padding-top:15px}
+ .intro h1{font-size:clamp(31px,7vw,40px)}
+ .preview{padding:8px}
+ .move-scene{padding:15px 16px;min-height:600px}
+ .move-scene-body{padding:12px 0 16px}
+ .move-stage-center{gap:9px;min-height:170px;margin:8px 0}
+ .move-art{border-radius:15px}
+ .move-art svg{height:155px}
+ .move-art-rhythm{font-size:8px;padding-bottom:10px;letter-spacing:.1em}
+ .move-stage-timing .move-dial{width:clamp(127px,38vw,163px);height:clamp(127px,38vw,163px);padding:7px}
+ .move-stage-timing .move-dial-number{font-size:clamp(37px,10vw,48px)}
+ .move-stage-timing .move-phase-cue{font-size:13px;margin-top:9px}
+ .move-phase-title{font-size:36px}
+ .move-phase-note{font-size:14px}
+ .move-context-note{padding:10px 11px;gap:9px}
+ .move-context-label{font-size:9px}
+ .move-context-note .move-small{font-size:11px}
+ .move-plan-copy strong{font-size:14px}
+ .move-plan-item .move-small{font-size:11px}
+ .studio{margin:16px 0 0}
+ .studio>summary{padding:14px;gap:10px}
+ .studio-content{padding:0 10px 12px}
+ .studio .conversation{padding:12px}
+}
+@media(prefers-reduced-motion:reduce){.move-figure,.studio-arrow{animation:none!important;transition:none!important}}
