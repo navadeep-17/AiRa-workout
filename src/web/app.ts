@@ -8,7 +8,8 @@ import type { StatementNode } from '../shared/openui/openui-model.js';
 import { redactValue } from '../shared/redact.js';
 import { renderComponent } from './components.js';
 import { byId,el } from './dom.js';
-import {WorkoutSession,STAGES,PHASE_KEYS,PHASE_INFO} from '../shared/workout-session.js';
+import {WorkoutSession,STAGES} from '../shared/workout-session.js';
+import {handleWorkoutIntent} from '../shared/workout-intents.js';
 
 type Config={providers:ProviderStatus[];token:string};let config:Config|undefined;
 const workout=new WorkoutSession();
@@ -27,13 +28,11 @@ const c=new Conversation(async(request:RequestData,signal:AbortSignal):Promise<R
 function makeNav(){return createRunNav({index:()=>c.document.screens.findIndex(s=>s.key===c.document.cursor),stepCount:()=>c.document.screens.length,isConsumed:()=>false,awaiting:()=>false,leave:()=>{if(c.pending)c.cancel('interrupted');},land:(from,to)=>{c.document.move(to);c.localEvent(to<from?activityClientEvents.wentBack(`step ${from+1}`,`step ${to+1}`):activityClientEvents.nowOnStep(`step ${to+1} of ${c.document.screens.length}`));},phase:()=>{},finish:()=>c.localEvent('Reached the final screen. This is not evidence of physical completion.')},{outMs:30,inMs:30});}
 let nav=makeNav();
 function send(text:string){if(!config)return;
-  if(c.provider==='mock'&&workoutMode()){const phrase=text.trim().toLowerCase();let changed=false;
-    if((/more time|ten more|extend|extra rest/.test(phrase)))changed=workout.extendRecovery();
-    else if(/lighter|slow down|less intense|easier/.test(phrase))changed=workout.lightenNext();
-    else if(/pause/.test(phrase))changed=workout.paused?false:workout.togglePause();
-    else if(/resume|continue my timer/.test(phrase))changed=workout.paused?workout.togglePause():false;
-    else if(/what('s| is) next|next phase/.test(phrase)) {workout.message=workout.activePhase&&workout.phaseIndex<4?`Up next: ${PHASE_INFO[PHASE_KEYS[workout.phaseIndex+1]].name}.`: 'You can review the plan at any time.';workout.revision++;changed=true;}
-    if(changed){draft.value='';workoutChanged();return;}
+  if(c.provider==='mock'&&workoutMode()&&text.trim().toLowerCase()!=='load wiring sample'){
+    const outcome=handleWorkoutIntent(workout,text);
+    draft.value='';
+    if(outcome.changed)workoutChanged();
+    return;
   }const provider=config.providers.find(p=>p.id===c.provider)!;if(!provider.enabled||(c.provider!=='mock'&&!c.consent)){c.error='Set up this provider and agree to usage, or select Mock.';render();return;}if(paused){c.error='Resume the preview before sending.';render();return;}const f=byId<HTMLSelectElement>('fault');const fault=f.value as RequestData['fault'];f.value='none';void c.send(text,fault);}
 function syncTimers(){
   if(lastClear!==c.document.clearVersion){nav.dispose();nav=makeNav();timers.forget();previousTimers.clear();lastClear=c.document.clearVersion;}
@@ -54,6 +53,20 @@ function render(){
   const transcript=byId('transcript');transcript.replaceChildren();if(!c.events.length)transcript.append(el('p','The workout runs locally without a model. Try a guided action above, or experiment with optional provider responses here.','micro'));
   for(const event of c.events){if(event.kind==='input'||event.kind==='response'){const n=el('div','','message '+(event.kind==='input'?'user':'assistant'));n.append(el('span',event.kind==='input'?'You':'Reply','who'),el('p',event.text??splitReply(event.result!.turn.reply).prose??''));transcript.append(n);}else if(event.text)transcript.append(el('p',event.text,'event'));else if(event.kind==='interrupted'||event.kind==='cancelled')transcript.append(el('p',event.kind==='interrupted'?'Previous reply interrupted. Your messages are kept.':'Reply cancelled.','event'));}
   transcript.scrollTop=transcript.scrollHeight;syncTimers();
+  const shortcuts=byId('coach-shortcuts');
+  const showShortcuts=c.provider==='mock'&&workoutMode();shortcuts.hidden=!showShortcuts;
+  shortcuts.replaceChildren();
+  if(showShortcuts){
+    const commands=workout.stage==='setup'?['Quick','Gentle']:
+      workout.stage==='preview'?['How much time?','Show plan']:
+      workout.waiting?['Continue','What’s next?']:
+      workout.paused?['Resume','What’s next?']:
+      workout.stage==='recovery'?['More rest','Make it lighter','Pause']:
+      workout.stage==='flow_a'?['Make it lighter','What’s next?','Pause']:
+      workout.activePhase?['What’s next?','Pause','End session']:['How much time?'];
+    shortcuts.append(el('span','LOCAL DEMO COMMANDS','micro'));
+    for(const command of commands){const chip=el('button',command,'coach-chip') as HTMLButtonElement;chip.type='button';chip.addEventListener('click',()=>send(command));shortcuts.append(chip);}
+  }
   const screens=c.document.screens,index=screens.findIndex(s=>s.key===c.document.cursor),isWorkout=workoutMode(),key=c.document.echo()+String(paused)+(isWorkout?workout.revision:'');
   if(key!==renderKey || !byId('screen').childNodes.length){renderKey=key;updates=[];const surface=byId('screen');surface.replaceChildren();const current=c.document.current;
     if(!current){const n=el('div','','empty');n.append(el('p','A BLANK CANVAS, WITH THE WIRING DONE','eyebrow'),el('h3','Your workout starts here.'),el('p','The provided sample checks the stepper, timer and state. It is not a finished workout design.'));surface.append(n);}
@@ -62,7 +75,7 @@ function render(){
   }
   byId('navigation').hidden=isWorkout||screens.length<2;byId('position').textContent=`${index+1} / ${screens.length}`;byId<HTMLButtonElement>('back').disabled=paused||index<=0;byId<HTMLButtonElement>('next').disabled=paused;byId('next').textContent=index===screens.length-1?'Finish preview':'Next →';
   byId('pause').hidden=isWorkout;byId<HTMLButtonElement>('pause').disabled=!screens.length;byId('pause').textContent=paused?'Resume preview':'Pause preview';byId('paused').hidden=!paused;
-  const cues=(c.document.current?.props.children as StatementNode[]??[]).filter(n=>n.name==='Cue').map(n=>String(n.props.text));byId('spoken').textContent=isWorkout?(workout.message||(workout.activePhase?PHASE_INFO[workout.activePhase].cue:'A little movement. A lot less managing.')):(cues.join(' ')||c.document.prose||'Current-screen Cues appear here as text. No audio is produced.');
+  const cues=(c.document.current?.props.children as StatementNode[]??[]).filter(n=>n.name==='Cue').map(n=>String(n.props.text));byId('spoken').textContent=isWorkout?(workout.coachCue):(cues.join(' ')||c.document.prose||'Current-screen Cues appear here as text. No audio is produced.');
   byId('state-json').textContent=JSON.stringify({ui_state:c.document.echo(),client_events:c.clientEvents,timers:timers.list(),workout:isWorkout?{stage:workout.stage,pace:workout.pace,preset:workout.preset,waiting:workout.waiting,paused:workout.paused,phaseTimers:workout.timers.list(),records:workout.records,changes:workout.changes}:undefined},null,2);byId<HTMLButtonElement>('export').disabled=c.pending||!c.events.length;
 }
 byId<HTMLFormElement>('composer').addEventListener('submit',event=>{event.preventDefault();const text=draft.value.trim();if(text){draft.value='';send(text);}});

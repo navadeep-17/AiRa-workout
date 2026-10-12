@@ -28,6 +28,7 @@ To show the original starter fixture, use **Load original wiring sample** in the
 - Explicit pause/resume, skipping and early-exit confirmation.
 - Accurate completion records and changes summary.
 - Warm responsive design, reduced motion, keyboard focus, readable timer and true offline operation.
+- Context-sensitive visible coaching, stage-aware local text commands and quick command chips.
 - Original provider adapters, builder state inspection, run export and generic fixture retained.
 
 See [Product, architecture and tested modes](docs/MOVE.md), [Exercise](docs/EXERCISE.md), and [Harness](docs/HARNESS.md).

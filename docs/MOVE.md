@@ -16,7 +16,7 @@ The provided `TimerLedger` is reused for the current simulated phase. A tested `
 
 ## Modes and honesty
 
-- **Mock:** The entire session and action controls work offline. Short phrases typed into the adjacent lab (`more time`, `slower`, `pause`, `resume`, `what's next`) use local, deterministic rules; these do not invoke a language model and are not presented as real AI reasoning.
+- **Mock:** The entire session and action controls work offline. The adjacent lab exposes stage-aware command chips and recognizes `more rest`, `slower`, `pause`, `resume`, `skip`, `end session`, `continue`, `what's next`, `how much time`, and `undo`. These are local, deterministic rules; these do not invoke a language model and are not presented as real AI reasoning.
 - **OpenAIAPI / ClaudeCLI:** The original opt-in provider adapters remain available but do not own or mutate the trusted session state. Model-based text may be tested with the user's own credentials and consent. The author did **not** make a live provider call in this build.
 - **Voice/media:** Not supported. All coaching is visible text. No activity, health, calories or sensors are measured.
 
@@ -27,3 +27,7 @@ Large controls, selected-state announcements (`aria-pressed`), a semantic simula
 ## Testing
 
 Run `npm run check` and `PLAYWRIGHT_CHROME_PATH=/path/to/chrome npm run test:ui`. The source package is produced by `npm run package`. The existing wiring sample is retained for harness regression under **Load original wiring sample**. Reset returns to Move's welcome screen.
+
+## Product refinement — contextual text guidance
+
+The active phase now renders coaching copy from trusted session state rather than always showing a generic phrase. Pause, waiting, recovery extension, gentle pacing, and the lighter second flow have distinct guidance. The Mock lab offers phase-relevant example commands and handles unknown requests without clearing or replacing the workout screens. No mock response is represented as an LLM call. Ending a completed but unadvanced phase records it as completed, and a completed phase cannot be skipped.

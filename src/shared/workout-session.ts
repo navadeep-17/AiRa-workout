@@ -43,6 +43,22 @@ export class WorkoutSession {
   get completed(){return this.records.filter(r=>r.outcome==='completed').length;}
   get skipped(){return this.records.filter(r=>r.outcome==='skipped').length;}
   private mark(msg:string){this.message=msg;this.revision++;return true;}
+  /** Visible local text response; never pretends that a model or sensor did anything. */
+  respond(msg:string){return this.mark(msg);}
+  get coachCue():string {
+    if(this.stage==='welcome')return 'Choose a short simulated session. There is no tracking or physical workout required.';
+    if(this.stage==='setup')return 'Pick a duration and a pace; the plan updates before you start.';
+    if(this.stage==='preview')return 'Review the flow. You can pause, skip, or end whenever you choose.';
+    if(this.stage==='summary')return this.endedEarly?'You ended when it felt right. Only finished phases are counted.':'Only completed phases are counted. This was a simulation.';
+    const phase=this.activePhase;
+    if(!phase)return 'You are in control of this session.';
+    if(this.waiting)return `${PHASE_INFO[phase].name} is complete. Continue when you are ready.`;
+    if(this.paused)return 'Paused. Nothing moves forward until you choose to resume.';
+    if(phase==='recovery')return this.recoveryAdded?'Extra recovery time is included. Add more if you need it.':'Recovery is yours to control. Ask for ten more seconds if you need them.';
+    if(phase==='flow_b'&&this.lightened)return 'This interval is shorter because you chose an easier next flow.';
+    if(this.pace==='gentle')return 'The gentle pacing you selected is reflected in the timing of this phase.';
+    return PHASE_INFO[phase].cue;
+  }
   private rebuildPlan(){const base=ALLOCATIONS[this.preset][this.pace];PHASE_KEYS.forEach((k,i)=>{this.activeSeconds[k]=base[i];});}
   toSetup(){if(this.stage!=='welcome')return false;this.stage='setup';return this.mark('Choose the kind of moment you have.');}
   toWelcome(){if(this.stage!=='setup')return false;this.stage='welcome';return this.mark('Welcome back.');}
@@ -73,7 +89,7 @@ export class WorkoutSession {
     this.records.push({phase,outcome:'completed',seconds:this.duration(phase),plannedSeconds:this.duration(phase)});
     this.timers.forget(phase);const next=PHASE_KEYS[this.phaseIndex+1];if(next)this.enter(next);else this.stage='summary';
     return this.mark(next?`Now: ${PHASE_INFO[next].name}.`:'You completed this simulated session.');}
-  askSkip(){if(!this.activePhase||this.modal)return false;this.modalWasRunning=this.timer()?.status==='running';if(this.modalWasRunning)this.timers.pause(this.activePhase);this.modal='skip';return this.mark('Skip this phase? It will not count as completed.');}
+  askSkip(){if(!this.activePhase||this.modal||this.waiting)return false;this.modalWasRunning=this.timer()?.status==='running';if(this.modalWasRunning)this.timers.pause(this.activePhase);this.modal='skip';return this.mark('Skip this phase? It will not count as completed.');}
   askEnd(){if(!this.activePhase||this.modal)return false;this.modalWasRunning=this.timer()?.status==='running';if(this.modalWasRunning)this.timers.pause(this.activePhase);this.modal='end';return this.mark('End this simulated session early?');}
   dismissModal(){if(!this.modal||!this.activePhase)return false;this.modal=null;if(this.modalWasRunning&&!this.waiting)this.timers.start(this.activePhase);this.paused=this.timer()?.status==='paused';return this.mark('Back to your session.');}
   confirmSkip(){if(this.modal!=='skip'||!this.activePhase)return false;const phase=this.activePhase,t=this.timer()!;
@@ -84,7 +100,7 @@ export class WorkoutSession {
   beginReady(){if(!this.activePhase||!this.paused||this.modal||this.waiting)return false;const t=this.timer();if(t?.status!=='stopped')return false;
     this.paused=false;this.timers.start(t.id);return this.mark(`Starting ${PHASE_INFO[this.activePhase].name}.`);}
   confirmEnd(){if(this.modal!=='end'||!this.activePhase)return false;const phase=this.activePhase,t=this.timer()!;
-    this.records.push({phase,outcome:'skipped',seconds:Math.max(0,t.seconds-t.remaining),plannedSeconds:this.duration(phase)});
+    this.records.push({phase,outcome:this.waiting?'completed':'skipped',seconds:this.waiting?this.duration(phase):Math.max(0,t.seconds-t.remaining),plannedSeconds:this.duration(phase)});
     this.timers.forget(phase);this.modal=null;this.stage='summary';this.paused=false;this.waiting=false;this.endedEarly=true;
     return this.mark('Session ended early. You chose when to stop.');}
   togglePlan(){this.showPlan=!this.showPlan;return this.mark(this.showPlan?'Your session plan is visible.':'Plan closed.');}

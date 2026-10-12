@@ -81,7 +81,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    const number=el('strong','', 'move-dial-number');const timerState=el('span','','move-dial-caption');
    dial.append(group('move-dial-inner',el('span',info.symbol,'move-dial-symbol'),number,timerState));
    const update=()=>{const item=s.timer();if(!item||item.id!==phase)return;number.textContent=formatDuration(item.remaining);timerState.textContent=s.waiting?'PHASE COMPLETE':s.paused?'PAUSED':'SIMULATED TIME';const progress=item.seconds>0?Math.min(100,Math.max(0,(item.seconds-item.remaining)/item.seconds*100)):0;dial.style.setProperty('--pct',`${progress}%`);};updates.push(update);update();
-   push(group('move-timer-wrap',dial),copy(s.waiting?'This part is complete. Continue whenever you’re ready.':info.cue,'move-phase-cue'));
+   push(group('move-timer-wrap',dial),copy(s.coachCue,'move-phase-cue'));
    const controls=group('move-phase-actions');
    if(s.waiting){const next=PHASE_KEYS[idx+1];controls.append(action(next?`Continue to ${PHASE_INFO[next].name}  ↗`:'See my summary  ↗',()=>s.next(),changed,'primary large'));}
    else if(s.paused&&t?.status==='stopped'){controls.append(action('Begin this phase  ↗',()=>s.beginReady(),changed,'primary large'));}
@@ -93,7 +93,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    push(controls);
    const next=PHASE_KEYS[idx+1];if(next)push(group('move-next',label('UP NEXT','move-small'),el('strong',desc(s,next))));
    push(group('move-bottom-actions',action('View plan',()=>s.togglePlan(),changed,'text'),
-     action('Skip phase',()=>s.askSkip(),changed,'text'),action('End session',()=>s.askEnd(),changed,'text danger-link')));
+     ...(s.waiting?[]:[action('Skip phase',()=>s.askSkip(),changed,'text')]),action('End session',()=>s.askEnd(),changed,'text danger-link')));
    push(helperLine(s));
  }
  if(s.stage==='summary'){

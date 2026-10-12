@@ -63,3 +63,16 @@ test('TimerLedger.extend rejects unknown and done timers, retains paused progres
  assert(l.extend('r',10));assert.equal(l.list()[0].status,'paused');assert.equal(l.list()[0].seconds,20);assert.equal(l.list()[0].remaining,16);
  assert.equal(l.extend('missing',10),false);assert.equal(l.extend('r',0),false);l.finish('r');assert.equal(l.extend('r',10),false);
 });
+
+test('completed phase cannot be misreported as skipped; ending there preserves completion',()=>{
+ const {s,clock}=create();begin(s);clock.forward(10);assert(s.tick());
+ assert.equal(s.askSkip(),false);assert(s.askEnd());assert(s.confirmEnd());
+ assert.equal(s.stage,'summary');assert.equal(s.completed,1);assert.equal(s.skipped,0);assert.equal(s.elapsed,10);
+});
+
+test('contextual coaching is consistent with selected pace and actual paused state',()=>{
+ const {s,clock}=create();assert.match(s.coachCue,/simulated/i);
+ s.toSetup();s.choosePace('gentle');s.toPreview();s.start();
+ assert.match(s.coachCue,/gentle/i);assert(s.togglePause());assert.match(s.coachCue,/Paused/);
+ assert(s.togglePause());clock.forward(10);assert(s.tick());assert.match(s.coachCue,/complete/i);
+});

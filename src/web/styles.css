@@ -15,3 +15,11 @@ header{max-width:1480px;border-bottom:1px solid var(--move-border);padding-block
 @media(max-width:1050px){.workspace{grid-template-columns:minmax(0,1fr)}.preview{order:1}.conversation{order:2}.move-scene{min-height:560px}.provider-panel{flex-wrap:wrap}}
 @media(max-width:760px){header,main{padding-left:12px;padding-right:12px}.intro{padding:14px 5px 6px}.intro h1{font-size:32px}.intro>p:last-child{font-size:13px}.preview{padding:8px;border-radius:22px}.conversation{padding:17px}.move-scene{min-height:610px;padding:18px 18px 13px;border-radius:18px}.move-sim-badge{font-size:8px}.move-title{font-size:36px}.move-hero-title{font-size:42px}.move-choice-group{margin:4px 0}.move-choices{gap:8px}.move-button.choice{min-height:74px;font-size:12px;padding:10px!important}.move-scene-body{padding:18px 2px}.move-phase-title{font-size:39px}.move-dial{width:min(244px,69vw);height:min(244px,69vw)}.move-dial-number{font-size:60px}.move-phase-actions>.move-button.secondary{min-width:125px;font-size:12px}.move-bottom-actions{gap:0}.move-bottom-actions .move-button{min-height:40px;padding:8px 5px}.move-stats{gap:5px}.move-stat{padding:10px 7px}.move-stat strong{font-size:21px}.move-summary-row{font-size:11px}.provider-panel{gap:6px}.provider-panel #provider-description{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.move-scene,.move-hero-symbol,.move-button{animation:none!important;transition:none!important}}
+
+/* Glanceable, stage-aware examples for the deterministic Mock guidance lab. */
+.coach-shortcuts{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:14px 0 11px}
+.coach-shortcuts .micro{flex-basis:100%;font-weight:750;font-size:10px;letter-spacing:.11em;color:var(--move-muted)}
+button.coach-chip{border:1px solid #cadccf;background:#fcfdfa;color:#3a614c;border-radius:999px;font-size:12px;min-height:38px;padding:7px 13px;transition:background .15s ease}
+button.coach-chip:hover:not(:disabled){background:#deebdf}
+button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){button.coach-chip{transition:none}}
