@@ -1,7 +1,6 @@
 import {button,el} from './dom.js';
-import {WorkoutSession,PHASE_KEYS,PHASE_INFO,formatDuration,type Phase,type Movement} from '../shared/workout-session.js';
+import {WorkoutSession,PHASE_KEYS,formatDuration,type Phase,type Movement} from '../shared/workout-session.js';
 import {directScene} from '../shared/scene-director.js';
-import {MOVEMENTS,LIGHT_MOVEMENT} from '../shared/workout-session.js';
 import {livingCompanion,companionMood} from './living-companion.js';
 
 function action(text:string, doIt:()=>boolean, changed:()=>void,kind=''){
@@ -31,6 +30,9 @@ function movementArt(m:Movement,compact=false):HTMLElement {
    steps:['M160 86 L129 114','M160 86 L190 116','M160 137 L113 190','M160 137 L213 195'],
    shifts:['M160 87 L138 112','M160 87 L190 107','M160 137 L142 200','M160 137 L185 198'],
    reach:['M160 86 L134 41','M160 86 L189 39','M160 137 L137 200','M160 137 L186 199'],
+   wrist:['M160 88 L124 113 L114 88','M160 88 L196 113 L206 88','M160 137 L137 199','M160 137 L185 199'],
+   desk:['M160 87 L124 109','M160 87 L196 109','M160 137 L139 199','M160 137 L184 199'],
+   taps:['M160 86 L126 118','M160 86 L191 116','M160 137 L112 187 L89 197','M160 137 L186 198'],
  };
  const [leftArm,rightArm,leftLeg,rightLeg]=poses[m.kind];
  for(const [d,cls] of [[leftArm,'left-arm'],[rightArm,'right-arm'],[leftLeg,'left-leg'],[rightLeg,'right-leg']])shape('path',{d,class:cls},figure);
@@ -63,7 +65,7 @@ function choiceCanvas(s:WorkoutSession,changed:()=>void):HTMLElement {
  const cards=group('aira-choice-grid');
  for(const option of ['steady','soft'] as const){
   const selected=option==='soft'?s.lightened:!s.lightened;
-  const movement=option==='soft'?LIGHT_MOVEMENT:MOVEMENTS.flow_b;
+  const movement=option==='soft'?s.alternativeMovement:s.originalNextMovement;
   const base=s.originalSecondMovementSeconds;
   const seconds=option==='soft'?Math.max(10,Math.floor(base*.6)):base;
   const card=action('',()=>option==='soft'?s.lightenNext():s.undoLighten(),changed,'aira-choice-card'+(selected?' is-selected':''));
@@ -91,10 +93,10 @@ function confirmation(s:WorkoutSession,changed:()=>void){
    action(s.modal==='end'?'End session':'Skip phase',()=>s.modal==='end'?s.confirmEnd():s.confirmSkip(),changed,'danger')));
  return group('move-modal-backdrop',panel);
 }
-function phaseProgress(index:number){const prog=group('move-phase-progress');PHASE_KEYS.forEach((p,i)=>{const dot=el('span','','move-phase-dot');if(i<=index)dot.classList.add('is-filled');dot.title=PHASE_INFO[p].name;prog.append(dot);});return prog;}
+function phaseProgress(s:WorkoutSession,index:number){const prog=group('move-phase-progress');PHASE_KEYS.forEach((p,i)=>{const dot=el('span','','move-phase-dot');if(i<=index)dot.classList.add('is-filled');dot.title=s.movement(p).title;prog.append(dot);});return prog;}
 function helperLine(s:WorkoutSession){const n=el('p',s.message||'You’re in control of this session.','move-feedback');n.setAttribute('role','status');n.setAttribute('aria-live','polite');return n;}
 
-export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>void)[],coachState?:{cue:string;model:string;pending:boolean;error:string}):HTMLElement {
+export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>void)[],coachState?:{cue:string;model:string;pending:boolean;error:string;planPending?:boolean;planStatus?:string;createLivePlan?:(request:string)=>void;livePlanEnabled?:boolean}):HTMLElement {
  const root=el('article','','move-scene stage-'+s.stage+(s.lightened?' has-adaptation':''));root.dataset.stage=s.stage;
  const brand=group('move-brand',el('span','a','move-mark'),el('span','aira','move-wordmark'),el('span','/ move','move-wordmark-suffix'));
  const badge=el('span',s.showcase?'✳  INTERACTIVE PREVIEW · NOT A COMPLETED WORKOUT':'●  FICTIONAL SIMULATION','move-sim-badge');
@@ -103,14 +105,32 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
  const push=(...nodes:HTMLElement[])=>body.append(...nodes);
 
  if(s.stage==='welcome'){
-   push(label('A DIFFERENT KIND OF WORKOUT COMPANION'),group('move-hero',
-     livingCompanion('hello'),headline('Movement that\nmoves with you.','move-hero-title')),
-     copy('A little movement, thoughtful guidance, and a plan that changes when you do.','move-lead'),
-     action('Make my session  ↗',()=>s.toSetup(),changed,'primary large'),
-     group('aira-tour-invite',group('aira-tour-invite-copy',el('span','A SHORTCUT FOR THE CURIOUS','aira-tour-kicker'),el('strong','Experience the magic in under a minute.'),copy('Choose a new path, make room to recover, and see a personal note. Nothing is marked as a completed workout.','move-small')),action('Explore the interactive preview  ↗',()=>s.startShowcase(),changed,'secondary')),
+   push(label('TELL AIRA WHAT YOU NEED'),group('move-hero',
+     livingCompanion('hello'),headline('A little movement.\nMade for your moment.','move-hero-title')),
+     copy('Have two minutes? Not much space? Tell AiRA what kind of reset you want. Your actual session will be shaped around the request.','move-lead'));
+   const promptLabel=el('label','WHAT DOES YOUR MOMENT LOOK LIKE?','aira-request-label');promptLabel.setAttribute('for','aira-request');
+   const request=el('textarea','','aira-request-textarea') as HTMLTextAreaElement;
+   request.id='aira-request';request.rows=3;request.maxLength=280;
+   request.placeholder='e.g. I have 2 minutes, a little room, and I need an energy boost.';
+   request.value=s.requestDraft;
+   request.addEventListener('input',()=>{s.requestDraft=request.value;});
+   const suggestions=group('aira-request-suggestions');
+   for(const [title,value] of [
+     ['⚡ Boost my energy','I need an energy boost, I have 2 minutes and room to move.'],
+     ['✳ Desk reset','I am at my desk with very little space. I want a gentle reset in 2 minutes.'],
+     ['◌ Help me unwind','I want a quiet relaxing session to unwind for 90 seconds.'],
+   ]){const b=button(title,()=>{request.value=value;s.requestDraft=value;},'aira-suggestion');suggestions.append(b);}
+   const create=action('Shape my session  ↗',()=>s.makePlan({request:request.value}),changed,'primary large');
+   const live=button(coachState?.planPending?'AI is drafting your plan…':'Use live AI to shape it  ✳',()=>coachState?.createLivePlan?.(request.value),'move-button secondary');
+   live.disabled=!!coachState?.planPending;
+   const disclaimer=copy('Offline planning works instantly with no account or API key. Live AI planning is optional; enable OpenAIAPI and consent in Studio first. This is an entirely fictional movement experience.','aira-planner-caption');
+   push(group('aira-request-panel',promptLabel,request,suggestions,group('aira-request-actions',create,live),disclaimer));
+   if(coachState?.planStatus)push(copy(coachState.planStatus,'aira-planner-status'));
+   if(s.message)push(helperLine(s));
+   push(group('aira-tour-invite',group('aira-tour-invite-copy',el('span','WANT A 40-SECOND TOUR?','aira-tour-kicker'),el('strong','Explore the interaction before your own session.'),copy('Try the choice canvas and recovery tools with transparent simulated progress.','move-small')),action('Explore the interactive preview  ↗',()=>s.startShowcase(),changed,'secondary')),
+     action('Use the original quick setup',()=>s.toSetup(),changed,'text'),
      action('How does this demo work?',()=>s.toggleHow(),changed,'text'));
-   if(s.showHow)push(copy('Preview five gentle movement ideas, then simulate each interval. You can pause, add rest or choose a lighter next activity. No movement or sensors are tracked.','move-explain'));
-   push(group('move-welcome-bottom',el('span','01 — CHOOSE','move-small'),el('span','02 — MOVE','move-small'),el('span','03 — ADAPT','move-small')));
+   if(s.showHow)push(copy('AiRA can locally choose from a safe movement catalog or optionally request a validated plan from OpenAI. Every timer action remains under your control. No movement or sensors are tracked.','move-explain'));
  }
  if(s.stage==='setup'){
    push(group('aira-intro-companion',livingCompanion('hello',true),label('AiRA is here to make this moment yours.')),label('01 / MAKE IT YOURS'),headline('What kind of moment\ndo you have?'),copy('Choose your time and energy. AiRA will shape the next few movements around you.','move-lead'));
@@ -122,7 +142,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
      group('move-actions',action('← Back',()=>s.toWelcome(),changed,'text'),action('See my plan  ↗',()=>s.toPreview(),changed,'primary large')));
  }
  if(s.stage==='preview'){
-   push(group('aira-intro-companion',livingCompanion('focus',true),label('A little guidance, not another dashboard.')),label('02 / YOUR FLOW'),headline('Here’s your flow.'),copy('Here are the actual movements. Nothing starts before you choose Start.','move-lead'),plan(s),
+   push(group('aira-intro-companion',livingCompanion('focus',true),label(s.selectedPlan?'YOUR SESSION, SHAPED FROM YOUR REQUEST':'A little guidance, not another dashboard.')),label('02 / YOUR FLOW'),headline(s.selectedPlan?'AiRA shaped a plan for you.':'Here’s your flow.'),copy(s.selectedPlan?s.selectedPlan.rationale:'Here are the actual movements. Nothing starts before you choose Start.','move-lead'),...(s.selectedPlan?[group('aira-plan-provenance',el('span',`${s.selectedPlan.source==='offline'?'RULE-BASED OFFLINE':'LIVE AI-ASSISTED'} PLAN · ${s.selectedPlan.goal.toUpperCase()} · ${s.selectedPlan.space==='compact'?'SMALL SPACE':'ROOM TO MOVE'}`),el('span',`Requested: ${s.selectedPlan.request||'A short session'}`))]:[]),plan(s),
      group('move-preview-total',el('span','TOTAL SIMULATED TIME','move-small'),el('strong',formatDuration(s.totalPlanned))),
      group('aira-autoflow-choice',copy('HANDS-FREE FLOW · Move to the next activity after a three-second preview.','move-small'),action(s.autoFlow?'On · Turn off':'Off · Turn on',()=>s.setAutoFlow(!s.autoFlow),changed,'secondary')),
      group('move-actions',action('Adjust choices',()=>s.edit(),changed,'text'),action(`Start ${formatDuration(s.totalPlanned)} session  ↗`,()=>s.start(),changed,'primary large')));
@@ -139,7 +159,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    root.classList.toggle('stage-recovery',phase==='recovery');
    const movement=s.movement(phase);
    push(group('move-between',label(s.showcase?`PREVIEW SCENE ${phase==='flow_a'?'1':'2'} OF 3  /  ${s.waiting?'READY':s.paused?'PAUSED':'IN PROGRESS'}`:`MOVEMENT ${idx+1} OF 5  /  ${s.waiting?'COMPLETE':s.paused?'PAUSED':'IN PROGRESS'}`),el('span',`0${idx+1} / 05`,'move-index')),
-      phaseProgress(idx),group('aira-movement-heading',group('aira-movement-copy',headline(movement.title,'move-phase-title'),copy(movement.instruction,'move-phase-note')),livingCompanion(companionMood(s),true)));
+      phaseProgress(s,idx),group('aira-movement-heading',group('aira-movement-copy',headline(movement.title,'move-phase-title'),copy(movement.instruction,'move-phase-note')),livingCompanion(companionMood(s),true)));
    const t=s.timer();
    const dial=group('move-dial');dial.setAttribute('role','timer');dial.setAttribute('aria-label','Simulated countdown');
    const number=el('strong','', 'move-dial-number');const timerState=el('span','','move-dial-caption');
@@ -184,6 +204,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
  if(s.stage==='summary'){
    const count=s.completed,heading=s.showcase?'A glimpse of what could be.':s.endedEarly?'You chose when to stop.':'You moved through it.';
    const personalLine=s.lightened&&s.recoveryAdded?'You made room to breathe and chose the gentler route. This session followed your lead.':s.lightened?'You chose the gentler route. Your next movement changed with you.':s.recoveryAdded?'You asked for more breathing room. The session made space for it.':s.endedEarly?'You chose to finish here. Your session respects that choice.':'You found a rhythm that felt right for this short moment.';
+   if(s.selectedPlan)push(copy(`Designed for: ${s.selectedPlan.goal} · ${s.selectedPlan.space==='compact'?'little space':'room to move'} · ${s.selectedPlan.source==='offline'?'offline rules':'validated AI proposal'}.`,'aira-summary-source'));
    push(group('aira-postcard',label(s.showcase?'YOUR INTERACTIVE PREVIEW POSTCARD':'A SMALL NOTE FROM AIRA'),livingCompanion('celebrate'),headline(s.showcase?'The next step was yours to choose.':'You found your own pace.'),copy(personalLine,'aira-postcard-note')),label(s.showcase?'PREVIEW / NOT A COMPLETED WORKOUT':'YOUR SESSION / COMPLETE'),headline(heading),copy(s.showcase?'You visited two real interactive moments. Unvisited phases were not simulated or counted as completed. The choices below are exactly what you tried.':'Here’s your simulated session, including every change you made along the way.','move-lead'));
    const numbers=group('move-stats',group('move-stat',el('strong',`${count} / 5`),copy('phases completed','move-small')),
      group('move-stat',el('strong',formatDuration(s.elapsed)),copy('simulated phase time','move-small')),

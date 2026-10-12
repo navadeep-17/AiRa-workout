@@ -47,3 +47,33 @@ test('coaching rejects malformed provider replies; session endpoint remains inde
   try{const r=await fetch(a.url+'/api/coach',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':a.cfg.token},body:JSON.stringify(data)});assert.equal(r.status,502);assert(!(await r.text()).includes('fake-coach-secret'));}finally{await a.close();}
  }
 });
+
+test('AI plan endpoint requires consent, local token and explicit API opt-in',async()=>{
+ const a=await app();
+ const req=(input,token=a.cfg.token)=>fetch(a.url+'/api/plan',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':token},body:JSON.stringify(input)});
+ try{
+  assert.equal((await req({request:'I want a two-minute desk reset',consent:true},'wrong')).status,403);
+  assert.equal((await req({request:'I want a two-minute desk reset',consent:false})).status,400);
+  assert.equal((await req({request:'I feel dizzy and need movement',consent:true})).status,400);
+  assert.equal((await req({request:'I want a two-minute desk reset',consent:true})).status,403);
+ }finally{await a.close();}
+});
+
+test('AI plan transport accepts a validated structured response and rejects imaginary movements',async()=>{
+ const {buildOfflinePlan,PLAN_PHASES}=await import('../dist/shared/session-planner.js');
+ const request='I need an energy boost, I have 2 minutes and room to move.';
+ const p=buildOfflinePlan({request});
+ const valid={goal:p.goal,space:p.space,durationSeconds:p.durationSeconds,rationale:'A timed sequence reflecting your energy and space.',steps:PLAN_PHASES.map(phase=>({phase,...p.steps[phase]}))};
+ const config=readConfig({ALLOW_LIVE_API:'true',OPENAI_API_KEY:'fake-secret'},process.cwd());
+ for(const invalid of [false,true]){
+  let calls=0;
+  const transport=async(url,options)=>{calls++;assert.equal(url,'https://api.openai.com/v1/responses');const data=JSON.parse(options.body);
+   assert.equal(data.text.format.name,'movement_plan');assert.equal(data.store,false);assert(!options.body.includes('fake-secret'));
+   const reply=invalid?{...valid,steps:valid.steps.map((x,i)=>i===1?{...x,id:'unsafe_not_real'}:x)}:valid;
+   return new Response(JSON.stringify({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(reply)}]}]}),{status:200});};
+  const a=await app(config,transport);
+  try{const r=await fetch(a.url+'/api/plan',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':a.cfg.token},body:JSON.stringify({request,consent:true})});
+   assert.equal(r.status,invalid?502:200);const data=await r.json();if(!invalid){assert.equal(data.plan.source,'openai-api');assert.equal(data.plan.steps.flow_a.id,'marching');assert.equal(data.plan.durationSeconds,120);}else assert(!JSON.stringify(data).includes('unsafe_not_real'));assert.equal(calls,1);
+  }finally{await a.close();}
+ }
+});

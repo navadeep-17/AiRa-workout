@@ -11,13 +11,14 @@ import { byId,el } from './dom.js';
 import {WorkoutSession,STAGES} from '../shared/workout-session.js';
 import {handleWorkoutIntent,isLocalWorkoutCommand} from '../shared/workout-intents.js';
 import {coachContext} from '../shared/coach.js';
+import {validatePlan,PLAN_PHASES} from '../shared/session-planner.js';
 
 type Config={providers:ProviderStatus[];token:string};let config:Config|undefined;
 const workout=new WorkoutSession();
 const workoutProgram=STAGES.map(stage=>`scene_${stage} = Screen([view_${stage}])\nview_${stage} = Workout(\"${stage}\")`).join('\n') + `\nroot = Screens([${STAGES.map(s=>`scene_${s}`).join(', ')}], scene_welcome)`;
 function seedWorkout(){const code='```openui\n'+workoutProgram+'\n```';c.document.apply(code);}
 function workoutMode(){return c.document.screens.some(s=>(s.props.children as StatementNode[]).some(n=>n.name==='Workout'));}
-function workoutChanged(){invalidateCoaching();const i=c.document.screens.findIndex(s=>s.key===`scene_${workout.stage}`);if(i>=0)c.document.move(i);c.localEvent('Move / '+workout.message);}
+function workoutChanged(){planVersion++;planPending=false;planStatus='';invalidateCoaching();const i=c.document.screens.findIndex(s=>s.key===`scene_${workout.stage}`);if(i>=0)c.document.move(i);c.localEvent('Move / '+workout.message);}
 const timers=new TimerLedger();let previousTimers=new Map<string,TimerListEntry>(),updates:(()=>void)[]=[],paused=false,pausedTimers:string[]=[],renderKey='',lastClear=0;
 const draft=byId<HTMLTextAreaElement>('message');
 type CoachLine={role:'user'|'assistant';text:string};
@@ -40,6 +41,25 @@ async function requestLiveCoaching(question:string){
  finally{clearTimeout(timeout);if(generation===coachGeneration){coachPending=false;coachSignal=null;render();}}
 }
 
+let planPending=false,planStatus='',planVersion=0;
+async function requestLivePlan(request:string){
+  if(!config||c.provider!=='openai-api'||!config.providers.some(p=>p.id==='openai-api'&&p.enabled)||!c.consent){
+    planStatus='For live AI plans: open Studio, select an enabled OpenAIAPI provider and approve usage. Offline planning works without it.';render();return;
+  }
+  if(request.trim().length<3||request.length>280){planStatus='Describe what you need in a short sentence first.';render();return;}
+  if(planPending)return;
+  planPending=true;planStatus='AI is proposing a session from the safe movement catalog…';const version=++planVersion,revision=workout.revision;
+  render();const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),22000);
+  try{
+    const response=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':config.token},body:JSON.stringify({request,consent:true}),signal:controller.signal});
+    const result=await response.json();if(!response.ok)throw new Error(result.error||'AI planning is unavailable.');
+    if(version!==planVersion||revision!==workout.revision||c.provider!=='openai-api'||!c.consent)return;
+    const raw=result.plan;const validated=raw&&typeof raw==='object'&&raw.steps?validatePlan({...raw,steps:PLAN_PHASES.map(phase=>({phase,...raw.steps[phase]}))},{request}):null;
+    if(!validated)throw new Error('The returned plan was not valid. Offline planning is still available.');
+    if(workout.applyPlan(validated)){planStatus='';workoutChanged();}
+  }catch(error){if(version!==planVersion)return;planStatus=controller.signal.aborted?'AI planning timed out. Try the offline planner.':error instanceof Error?error.message:'AI planning failed. Offline planning is available.';}
+  finally{clearTimeout(timeout);if(version===planVersion){planPending=false;render();}}
+}
 const c=new Conversation(async(request:RequestData,signal:AbortSignal):Promise<Result>=>{
   const controller=new AbortController(),abort=()=>controller.abort();signal.addEventListener('abort',abort,{once:true});const timeout=setTimeout(abort,request.provider==='claude-cli'?85000:48000);
   try{const response=await fetch('/api/turn',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':config!.token},body:JSON.stringify(request),signal:controller.signal});const data=await response.json();if(!response.ok)throw new Error(data.error??'Request failed.');return data;}
@@ -98,7 +118,7 @@ function render(){
   const screens=c.document.screens,index=screens.findIndex(s=>s.key===c.document.cursor),isWorkout=workoutMode(),key=c.document.echo()+String(paused)+(isWorkout?workout.revision+coachCue+coachModel+String(coachPending)+coachError:'');
   if(key!==renderKey || !byId('screen').childNodes.length){renderKey=key;updates=[];const surface=byId('screen');surface.replaceChildren();const current=c.document.current;
     if(!current){const n=el('div','','empty');n.append(el('p','A BLANK CANVAS, WITH THE WIRING DONE','eyebrow'),el('h3','Your workout starts here.'),el('p','The provided sample checks the stepper, timer and state. It is not a finished workout design.'));surface.append(n);}
-    else for(const node of current.props.children as StatementNode[])if(node.name!=='Cue')surface.append(renderComponent(node,{send,timers,timerAction,updates,paused,workout,onWorkoutChange:workoutChanged,coachState:{cue:coachCue,model:coachModel,pending:coachPending,error:coachError}}));
+    else for(const node of current.props.children as StatementNode[])if(node.name!=='Cue')surface.append(renderComponent(node,{send,timers,timerAction,updates,paused,workout,onWorkoutChange:workoutChanged,coachState:{cue:coachCue,model:coachModel,pending:coachPending,error:coachError,planPending,planStatus,createLivePlan:(request:string)=>{void requestLivePlan(request);},livePlanEnabled:c.provider==='openai-api'&&c.consent}}));
     const progress=byId('progress');progress.hidden=isWorkout;progress.replaceChildren();if(screens.length>1)for(let i=0;i<screens.length;i++){const n=el('span','',''+(i===index?'active':i<index?'past':''));n.setAttribute('aria-label',`Screen ${i+1}${i===index?', current':''}`);progress.append(n);}
   }
   byId('navigation').hidden=isWorkout||screens.length<2;byId('position').textContent=`${index+1} / ${screens.length}`;byId<HTMLButtonElement>('back').disabled=paused||index<=0;byId<HTMLButtonElement>('next').disabled=paused;byId('next').textContent=index===screens.length-1?'Finish preview':'Next →';

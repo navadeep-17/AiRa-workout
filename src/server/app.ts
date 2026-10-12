@@ -7,6 +7,7 @@ import { APP_VERSION, SCHEMA_VERSION, isRequest, isTurn, type Versions, type Res
 import { mockTurn } from './mock.js';
 import {isCoachRequest} from '../shared/coach.js';
 import {generateCoachCue} from './coach.js';
+import {generatePlan,isPlanRequest} from './plan.js';
 import { loadPrompt } from './prompt.js';
 import { ScreenDocument } from '../shared/openui/document.js';
 import { liveTurn, PublicError } from './provider.js';
@@ -46,6 +47,24 @@ export function createApp(config: Config, transport: typeof fetch = fetch, cliTr
       const path = new URL(req.url ?? '/', 'http://localhost').pathname;
       if (path === '/api/config' && req.method === 'GET') {
         json(res, 200, { defaultProvider: 'mock', providers: providerStatuses(config), token, appVersion: APP_VERSION }); return;
+      }
+      if (path === '/api/plan' && req.method === 'POST') {
+        const supplied = Buffer.from(String(req.headers['x-local-token'] ?? ''));
+        if (supplied.length !== token.length || !timingSafeEqual(supplied,Buffer.from(token))) throw new PublicError('FORBIDDEN','Reload the local app before planning.',403);
+        if (req.headers['content-type'] !== 'application/json') throw new PublicError('INPUT','Expected application/json.',415);
+        const input = await readBody(req);
+        if (!isPlanRequest(input)) throw new PublicError('INPUT','Planning needs a short request and explicit consent.',400);
+        if (/\b(pain|dizzy|faint|injured|injury|chest pain)\b/i.test(input.request))throw new PublicError('INPUT','This demo cannot assess symptoms. Stop if unwell and seek appropriate support.',400);
+        if (!config.allowLive || !config.key) throw new PublicError('OPT_IN','Live AI planning is not enabled on this computer.',403);
+        if (active >= 3) throw new PublicError('BUSY','Too many pending requests.',429);
+        active++;
+        const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
+        res.once('close',()=>{if(!res.writableEnded)controller.abort();});
+        try{const plan=await generatePlan({request:input.request},{key:config.key,model:config.model},controller.signal,transport);
+          if(!controller.signal.aborted)json(res,200,{plan,source:'openai-api'});
+          else if(!res.destroyed)json(res,408,{error:'Planning timed out; choose the offline planner.'});
+        }finally{clearTimeout(timeout);active--;}
+        return;
       }
       if (path === '/api/coach' && req.method === 'POST') {
         const supplied = Buffer.from(String(req.headers['x-local-token'] ?? ''));

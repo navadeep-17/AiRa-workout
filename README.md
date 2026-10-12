@@ -1,3 +1,25 @@
+# Move with AiRA — a workout shaped around your moment (v7)
+
+**AI-first product direction:** The user describes a moment in natural language. AiRA proposes an actual timed session with chosen movements, personalized duration, and space-conscious alternatives—not merely a fixed workout with generated motivational text.
+
+Open the local app and try **Boost my energy** and **Desk reset**. Both produce different movement sequences using the same trusted timer and OpenUI renderer. The default planner is **offline rules**, visibly labeled as such. A consent-gated **OpenAIAPI plan generator** can optionally propose a validated plan; it is not required for the core journey and has not been tested against a real account.
+
+**Quick start (Node >=22.18):**
+
+```sh
+npm ci --ignore-scripts
+npm run check
+npm start
+```
+
+Visit `http://127.0.0.1:4319` and use **Shape my session**. See [v7 architecture, examples, restrictions and review path](docs/AI_FIRST_V7.md). The prior fixed-session setup and interactive reviewer preview remain available as secondary paths.
+
+**Safety and claims:** This is a fictional simulation: no real physical activity, biometrics, calorie counts, audio or sensors are measured. All model output is untrusted until validated against a finite movement catalog and bounded integer timings. The app itself owns every timer, pause, skip and phase transition.
+
+**Verification status:** 82 unit/HTTP tests, TypeScript and lint passed in the local source workspace on Node 22.16 (below the specified >=22.18 runtime). A synthetic transport covered valid and invalid model-proposed plans. Full Chromium UI execution and a real OpenAI call remain unverified here; run `npm run test:ui` on the evaluator machine and document the outcomes honestly.
+
+---
+
 # Move with AiRA — an adaptive workout moment
 
 **AiRA AI Product Builder assessment** · built on the provided `workout-starter` harness.

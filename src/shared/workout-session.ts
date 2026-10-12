@@ -1,3 +1,4 @@
+import {buildOfflinePlan,stepMovement,alternativeFor,type SessionPlan,type PlannerInput} from './session-planner.js';
 import { TimerLedger } from './openui/timer-store.js';
 
 export const PHASE_KEYS = ['settle', 'flow_a', 'recovery', 'flow_b', 'wind_down'] as const;
@@ -16,7 +17,7 @@ export const PHASE_INFO: Record<Phase,{name:string;note:string;cue:string;symbol
   wind_down:{name:'Slow arm reach',note:'Bring it to a close',cue:'Nearly there. Finish when you feel ready.',symbol:'✺'},
 };
 /** Short, legible simulated movement content, not clinical exercise advice. */
-export type MovementKind = 'shoulders'|'march'|'breath'|'steps'|'shifts'|'reach';
+export type MovementKind = 'shoulders'|'march'|'breath'|'steps'|'shifts'|'reach'|'wrist'|'desk'|'taps';
 export type Movement = {title:string; instruction:string; detail:string; cue:string; kind:MovementKind; rhythm:string};
 export const MOVEMENTS:Record<Phase,Movement> = {
   settle:{title:'Shoulder rolls',instruction:'Roll your shoulders gently back, then forward.',detail:'Start small, with space to settle into the session.',cue:'Ease in. There is no perfect pace to keep.',kind:'shoulders',rhythm:'ROLL · RELEASE'},
@@ -42,6 +43,7 @@ export class WorkoutSession {
   stage:Stage='welcome';preset:Preset='quick';pace:Pace='steady';modal:Modal=null;
   paused=false;waiting=false;endedEarly=false;showPlan=false;showHow=false;choiceOpen=false;
   recoveryAdded=0;lightened=false;message='';revision=0;autoFlow=false;showcase=false;
+  selectedPlan:SessionPlan|null=null;requestDraft='';
   private autoNextAt:number|null=null;
   readonly records:SessionRecord[]=[];readonly changes:string[]=[];
   private activeSeconds:Record<Phase,number>={settle:10,flow_a:20,recovery:15,flow_b:20,wind_down:10};
@@ -51,8 +53,10 @@ export class WorkoutSession {
   get phaseIndex(){return this.activePhase?PHASE_KEYS.indexOf(this.activePhase):-1;}
   get totalPlanned(){return PHASE_KEYS.reduce((n,p)=>n+this.activeSeconds[p],0);}
   duration(p:Phase){return this.activeSeconds[p];}
-  get originalSecondMovementSeconds(){return ALLOCATIONS[this.preset][this.pace][3];}
-  movement(p:Phase):Movement{return p==='flow_b'&&this.lightened?LIGHT_MOVEMENT:MOVEMENTS[p];}
+  get originalSecondMovementSeconds(){return this.selectedPlan?.steps.flow_b.seconds??ALLOCATIONS[this.preset][this.pace][3];}
+  get alternativeMovement(){return this.selectedPlan?stepMovement(alternativeFor(this.selectedPlan)):LIGHT_MOVEMENT;}
+  get originalNextMovement(){return this.selectedPlan?stepMovement(this.selectedPlan.steps.flow_b.id):MOVEMENTS.flow_b;}
+  movement(p:Phase):Movement{return p==='flow_b'&&this.lightened?this.alternativeMovement:this.selectedPlan?stepMovement(this.selectedPlan.steps[p].id):MOVEMENTS[p];}
   get activeMovement():Movement|null{return this.activePhase?this.movement(this.activePhase):null;}
   timer(){const phase=this.activePhase;return phase?this.timers.list().find(t=>t.id===phase):undefined;}
   get elapsed(){const previous=this.records.reduce((n,r)=>n+r.seconds,0);const active=this.timer();return previous+(active?active.seconds-active.remaining:0);}
@@ -76,24 +80,32 @@ export class WorkoutSession {
     if(this.waiting)return `Phase complete: ${this.movement(phase).title}. Continue when you are ready.`;
     if(this.paused)return 'Paused. Nothing moves forward until you choose to resume.';
     if(phase==='recovery')return this.recoveryAdded?'You have extra recovery time. The next move will wait.':this.movement(phase).cue;
-    if(phase==='flow_b'&&this.lightened)return LIGHT_MOVEMENT.cue;
-    if(this.pace==='gentle')return `Gentle pace: ${this.movement(phase).cue}`;
+    if(phase==='flow_b'&&this.lightened)return this.alternativeMovement.cue;
+    if(this.pace==='gentle'||this.selectedPlan?.goal==='unwind')return `Gentle pace: ${this.movement(phase).cue}`;
     return this.movement(phase).cue;
   }
   private rebuildPlan(){const base=ALLOCATIONS[this.preset][this.pace];PHASE_KEYS.forEach((k,i)=>{this.activeSeconds[k]=base[i];});}
-  toSetup(){if(this.stage!=='welcome')return false;this.stage='setup';return this.mark('Choose the kind of moment you have.');}
+  applyPlan(plan:SessionPlan){
+    if(!['welcome','setup','preview'].includes(this.stage)||this.records.length||this.timers.list().length)return false;
+    this.selectedPlan=plan;this.lightened=false;this.recoveryAdded=0;this.changes.length=0;
+    for(const phase of PHASE_KEYS)this.activeSeconds[phase]=plan.steps[phase].seconds;
+    this.stage='preview';this.showPlan=false;this.showcase=false;
+    return this.mark(`Your ${plan.goal} plan is ready: ${formatDuration(plan.durationSeconds)}, ${plan.space==='compact'?'small space':'room to move'}.`);
+  }
+  makePlan(input:PlannerInput){if(input.request.trim().length<3)return this.respond('Tell AiRA a little about your time, energy or space first.');if(/\b(pain|dizzy|faint|injured|injury|chest pain)\b/i.test(input.request))return this.respond('If you are feeling pain, dizzy or unwell, stop and seek appropriate help. This fictional workout demo cannot assess symptoms.');return this.applyPlan(buildOfflinePlan(input));}
+  toSetup(){if(this.stage!=='welcome')return false;this.selectedPlan=null;this.stage='setup';return this.mark('Choose the kind of moment you have.');}
   toWelcome(){if(this.stage!=='setup')return false;this.stage='welcome';return this.mark('Welcome back.');}
   choosePreset(p:Preset){if(this.stage!=='setup'||!['quick','unhurried'].includes(p))return false;this.preset=p;this.rebuildPlan();return this.mark(`${p==='quick'?'Quick':'Unhurried'} session selected.`);}
   choosePace(p:Pace){if(this.stage!=='setup'||!['steady','gentle'].includes(p))return false;this.pace=p;this.rebuildPlan();return this.mark(`${p==='gentle'?'Gentle':'Steady'} pace selected.`);}
   toPreview(){if(this.stage!=='setup')return false;this.stage='preview';return this.mark('Your simulated plan is ready.');}
-  edit(){if(this.stage!=='preview')return false;this.stage='setup';return this.mark('Make it yours.');}
+  edit(){if(this.stage!=='preview')return false;this.stage=this.selectedPlan?'welcome':'setup';return this.mark('Make it yours.');}
   start(){if(this.stage!=='preview')return false;this.records.length=0;this.changes.length=0;this.endedEarly=false;this.timers.forget();this.autoNextAt=null;this.choiceOpen=false;this.enter('settle');return this.mark('Session started · simulated only.');}
   /** Evaluator tour: real local controls, no invented completion records or timer fast-forward. */
   startShowcase(){
     if(this.stage!=='welcome')return false;
     this.showcase=true;this.autoFlow=false;this.endedEarly=false;this.showPlan=false;this.showHow=false;
     this.records.length=0;this.changes.length=0;this.recoveryAdded=0;this.lightened=false;
-    this.rebuildPlan();this.timers.forget();this.enter('flow_a');this.choiceOpen=true;
+    this.selectedPlan=null;this.rebuildPlan();this.timers.forget();this.enter('flow_a');this.choiceOpen=true;
     return this.mark('Interactive preview, moment one of three. Try choosing a gentler next movement.');
   }
   private recordShowcaseMoment(){
@@ -131,10 +143,10 @@ export class WorkoutSession {
     return this.mark(`Added 10 seconds. ${formatDuration(this.timer()!.remaining)} remaining.`);}
   lightenNext(){if(!['flow_a','recovery'].includes(this.stage)||this.modal||this.waiting||this.lightened)return false;
     const old=this.activeSeconds.flow_b,next=Math.max(10,Math.floor(old*.6));this.activeSeconds.flow_b=next;this.lightened=true;
-    this.changes.push(`Side steps changed to Gentle weight shifts (${old}s → ${next}s)`);return this.mark(`Switched to Gentle weight shifts for ${next} seconds.`);}
+    this.changes.push(`${this.originalNextMovement.title} changed to ${this.alternativeMovement.title} (${old}s → ${next}s)`);return this.mark(`Switched to ${this.alternativeMovement.title} for ${next} seconds.`);}
   undoLighten(){if(!this.lightened||!['flow_a','recovery'].includes(this.stage)||this.modal||this.waiting)return false;
-    const old=this.activeSeconds.flow_b;this.activeSeconds.flow_b=ALLOCATIONS[this.preset][this.pace][3];this.lightened=false;
-    this.changes.push(`Side steps restored (${old}s → ${this.activeSeconds.flow_b}s)`);return this.mark('Side steps are back in your plan.');}
+    const old=this.activeSeconds.flow_b;this.activeSeconds.flow_b=this.originalSecondMovementSeconds;this.lightened=false;
+    this.changes.push(`${this.originalNextMovement.title} restored (${old}s → ${this.activeSeconds.flow_b}s)`);return this.mark(`${this.originalNextMovement.title} is back in your plan.`);}
   next(){if(!this.activePhase||!this.waiting||this.modal)return false;const phase=this.activePhase;
     this.records.push({phase,outcome:'completed',seconds:this.duration(phase),plannedSeconds:this.duration(phase),movementTitle:this.movement(phase).title});
     this.timers.forget(phase);this.autoNextAt=null;this.choiceOpen=false;const next=PHASE_KEYS[this.phaseIndex+1];if(next)this.enter(next);else this.stage='summary';
@@ -145,7 +157,7 @@ export class WorkoutSession {
   confirmSkip(){if(this.modal!=='skip'||!this.activePhase)return false;const phase=this.activePhase,t=this.timer()!;
     const spent=Math.max(0,t.seconds-t.remaining);this.records.push({phase,outcome:'skipped',seconds:spent,plannedSeconds:this.duration(phase),movementTitle:this.movement(phase).title});
     this.timers.forget(phase);this.autoNextAt=null;this.choiceOpen=false;const next=PHASE_KEYS[this.phaseIndex+1];this.modal=null;this.paused=false;
-    if(next){this.stage=next;this.choiceOpen=next==='recovery';this.waiting=false;this.timers.ensure(next,{label:PHASE_INFO[next].name,seconds:this.duration(next)});this.paused=true;}else this.stage='summary';
+    if(next){this.stage=next;this.choiceOpen=next==='recovery';this.waiting=false;this.timers.ensure(next,{label:this.movement(next).title,seconds:this.duration(next)});this.paused=true;}else this.stage='summary';
     return this.mark(next?`Skipped. ${this.movement(next).title} is ready when you are.`:'Session reached its end with a skipped phase.');}
   beginReady(){if(!this.activePhase||!this.paused||this.modal||this.waiting)return false;const t=this.timer();if(t?.status!=='stopped')return false;
     this.paused=false;this.timers.start(t.id);return this.mark(`Starting ${this.movement(this.activePhase).title}.`);}
@@ -156,5 +168,5 @@ export class WorkoutSession {
   togglePlan(){this.showPlan=!this.showPlan;return this.mark(this.showPlan?'Your session plan is visible.':'Plan closed.');}
   toggleHow(){this.showHow=!this.showHow;return this.mark(this.showHow?'How this simulation works.':'');}
   reset(){this.stage='welcome';this.preset='quick';this.pace='steady';this.modal=null;this.paused=false;this.waiting=false;this.endedEarly=false;this.showPlan=false;this.showHow=false;
-    this.recoveryAdded=0;this.lightened=false;this.choiceOpen=false;this.autoFlow=false;this.showcase=false;this.autoNextAt=null;this.records.length=0;this.changes.length=0;this.timers.forget();this.rebuildPlan();return this.mark('Ready for another little moment.');}
+    this.recoveryAdded=0;this.lightened=false;this.selectedPlan=null;this.requestDraft='';this.choiceOpen=false;this.autoFlow=false;this.showcase=false;this.autoNextAt=null;this.records.length=0;this.changes.length=0;this.timers.forget();this.rebuildPlan();return this.mark('Ready for another little moment.');}
 }

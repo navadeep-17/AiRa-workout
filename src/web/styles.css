@@ -190,3 +190,24 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 .aira-director-copy{flex:1}
 @media(max-width:650px){.aira-checkin{flex-direction:column;align-items:stretch;gap:10px;padding:13px}.aira-checkin-action{max-width:none;width:100%}.aira-tour-progress{gap:8px}}
 @media(prefers-reduced-motion:reduce){.aira-checkin{animation:none!important;transition:none!important}}
+
+/* V7 — prompt-first plan creation. The UI is driven by validated session data. */
+.aira-request-panel{background:linear-gradient(140deg,#eef8ed,#f7fbf3);border:1px solid #c7dfc8;padding:21px;border-radius:22px;display:flex;flex-direction:column;gap:12px;margin:20px 0}
+.aira-request-label{font-size:11px;font-weight:800;letter-spacing:.14em;color:#426c53}
+.aira-request-textarea{font-family:inherit;font-size:17px;line-height:1.5;display:block;width:100%;box-sizing:border-box;resize:vertical;padding:15px;border:1px solid #b7d3bb;background:white;border-radius:13px;min-height:95px;color:#2f4f3a}
+.aira-request-textarea:focus-visible{outline:3px solid #77ae87;outline-offset:2px}
+.aira-request-suggestions{display:flex;gap:8px;flex-wrap:wrap}
+.aira-suggestion{min-height:40px;border:1px solid #b8d4bd;background:white;border-radius:24px;color:#35644b;padding:9px 13px;font-weight:650;font-size:12px;cursor:pointer}
+.aira-suggestion:hover{background:#e3f1e3}
+.aira-request-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.aira-request-actions .move-button{flex:1;min-width:190px;white-space:normal}
+.aira-planner-caption{font-size:11px;line-height:1.5;color:#5d7362;margin:0}
+.aira-planner-status{font-size:13px;padding:12px;background:#fff1d9;border-radius:10px;color:#6f5420}
+.aira-plan-provenance{display:flex;flex-direction:column;gap:5px;border-radius:12px;background:#e7f1e8;padding:12px 14px;margin:12px 0;font-size:11px;color:#3c684d;line-height:1.5}
+.aira-plan-provenance span:first-child{font-weight:800;letter-spacing:.09em}
+.aira-summary-source{font-size:12px;color:#4f775d}
+@media(max-width:620px){.aira-request-panel{padding:15px}.aira-request-textarea{font-size:16px}.aira-request-actions{flex-direction:column;align-items:stretch}.aira-request-actions .move-button{width:100%}}
+
+.motion-wrist .move-figure{animation:move-figure-breathe 3.8s ease-in-out infinite}
+.motion-desk .move-figure{animation:move-figure-breathe 3.2s ease-in-out infinite}
+.motion-taps .move-figure{animation-duration:1.8s}
