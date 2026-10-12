@@ -1,5 +1,7 @@
 import {button,el} from './dom.js';
 import {WorkoutSession,PHASE_KEYS,PHASE_INFO,formatDuration,type Phase,type Movement} from '../shared/workout-session.js';
+import {directScene} from '../shared/scene-director.js';
+import {MOVEMENTS,LIGHT_MOVEMENT} from '../shared/workout-session.js';
 import {livingCompanion,companionMood} from './living-companion.js';
 
 function action(text:string, doIt:()=>boolean, changed:()=>void,kind=''){
@@ -51,6 +53,28 @@ function plan(s:WorkoutSession){
    n.dataset.movement=s.movement(p).kind;wrap.append(n);
  });
  return wrap;
+}
+/** Two genuine, reversible futures for the next movement. Cards are trusted controls, not model-created HTML. */
+function choiceCanvas(s:WorkoutSession,changed:()=>void):HTMLElement {
+ const box=group('aira-choice-canvas');box.setAttribute('aria-label','Choose the next movement');
+ box.append(group('move-between',group('aira-choice-heading',label('A FORK IN YOUR STORY'),headline('Two ways forward.','move-panel-title')),
+  action('Close choices',()=>s.hideChoices(),changed,'text')),
+  copy('What feels right for the next movement? The current countdown keeps its place.','move-small'));
+ const cards=group('aira-choice-grid');
+ for(const option of ['steady','soft'] as const){
+  const selected=option==='soft'?s.lightened:!s.lightened;
+  const movement=option==='soft'?LIGHT_MOVEMENT:MOVEMENTS.flow_b;
+  const base=s.originalSecondMovementSeconds;
+  const seconds=option==='soft'?Math.max(10,Math.floor(base*.6)):base;
+  const card=action('',()=>option==='soft'?s.lightenNext():s.undoLighten(),changed,'aira-choice-card'+(selected?' is-selected':''));
+  card.setAttribute('aria-pressed',String(selected));card.setAttribute('aria-label',`${option==='soft'?'Gentler path':'Steady path'}: ${movement.title}, ${seconds} seconds${selected?', selected':''}`);
+  card.append(el('span',option==='soft'?'02 / THE GENTLER PATH':'01 / KEEP YOUR RHYTHM','aira-choice-kicker'),movementArt(movement,true),
+   el('strong',movement.title,'aira-choice-name'),copy(movement.instruction,'aira-choice-description'),
+   el('span',`${formatDuration(seconds)} · ${selected?'YOUR CURRENT CHOICE':'CHOOSE THIS PATH'}`,'aira-choice-duration'));
+  cards.append(card);
+ }
+ box.append(cards,copy('You can change your mind before the next activity begins. Only the upcoming scene changes.','aira-choice-footnote'));
+ return box;
 }
 function shortPlan(s:WorkoutSession,changed:()=>void){
  if(!s.showPlan)return document.createDocumentFragment();
@@ -113,7 +137,12 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    const number=el('strong','', 'move-dial-number');const timerState=el('span','','move-dial-caption');
    dial.append(group('move-dial-inner',number,timerState));
    const update=()=>{const item=s.timer();if(!item||item.id!==phase)return;number.textContent=formatDuration(item.remaining);timerState.textContent=s.waiting?'PHASE COMPLETE':s.paused?'PAUSED':'SIMULATED TIME';const progress=item.seconds>0?Math.min(100,Math.max(0,(item.seconds-item.remaining)/item.seconds*100)):0;dial.style.setProperty('--pct',`${progress}%`);};updates.push(update);update();
-   push(group('move-stage-center',movementArt(movement),group('move-stage-timing',dial,copy(s.coachCue,'move-phase-cue'))));
+   push(group('move-stage-center',movementArt(movement),group('move-stage-timing',dial)));
+   const director=group('aira-director');director.setAttribute('aria-label','AiRA scene direction');
+   const beatLabel=el('span','','aira-director-chapter'),beatLine=el('strong','','aira-director-line'),beatHint=el('span','','aira-director-hint');
+   director.append(el('span','✳','aira-director-mark'),group('aira-director-copy',beatLabel,beatLine,beatHint));
+   const direct=()=>{const shot=directScene(s);if(root.dataset.beat!==shot.beat)root.dataset.beat=shot.beat;beatLabel.textContent=shot.chapter;beatLine.textContent=shot.line;beatHint.textContent=shot.hint;};
+   updates.push(direct);direct();push(director);
    push(group('move-context-note',el('span','AIRA SAYS','move-context-label'),copy(s.lightened&&['flow_a','recovery'].includes(phase)?'You asked for something gentler. I changed what comes next, not just the countdown.':movement.detail,'move-small')));
    const controls=group('move-phase-actions');
    if(s.waiting){const next=PHASE_KEYS[idx+1];controls.append(action(next?`Continue to ${s.movement(next).title}  ↗`:'See my summary  ↗',()=>s.next(),changed,'primary large'));
@@ -122,10 +151,11 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    else if(s.paused&&t?.status==='stopped'){controls.append(action('Begin this phase  ↗',()=>s.beginReady(),changed,'primary large'));}
    else controls.append(action(s.paused?'Resume session  ▶':'Pause session  Ⅱ',()=>s.togglePause(),changed,'primary large'));
    if(phase==='recovery'&&!s.waiting){const extend=action(s.recoveryAdded>=30?'Maximum extra time added':'+ Give me 10 more seconds',()=>s.extendRecovery(),changed,'secondary');extend.disabled=s.recoveryAdded>=30;controls.append(extend);}
-   if((phase==='flow_a'||phase==='recovery')&&!s.waiting){
-     controls.append(s.lightened?action('Undo lighter next flow',()=>s.undoLighten(),changed,'secondary'):action('Make next flow lighter',()=>s.lightenNext(),changed,'secondary'));
+   if((phase==='flow_a'||phase==='recovery')&&!s.waiting&&!s.choiceOpen){
+     controls.append(action('Explore two paths for what comes next  ↗',()=>s.showChoices(),changed,'secondary'));
    }
    push(controls);
+   if((phase==='flow_a'||phase==='recovery')&&s.choiceOpen&&!s.waiting)push(choiceCanvas(s,changed));
    if(!s.waiting)push(group('aira-autoflow-mini',copy(s.autoFlow?'HANDS-FREE FLOW · ON':'HANDS-FREE FLOW · OFF','move-small'),action(s.autoFlow?'Turn off':'Turn on',()=>s.setAutoFlow(!s.autoFlow),changed,'text')));
    const next=PHASE_KEYS[idx+1];if(next)push(group('move-next'+(s.lightened&&next==='flow_b'?' is-adapted':''),label('UP NEXT','move-small'),el('strong',desc(s,next)),...(s.lightened&&next==='flow_b'?[el('span','✦  UPDATED TO MATCH YOUR ENERGY','aira-adapt-label')]:[])));
    push(group('move-bottom-actions',action('View plan',()=>s.togglePlan(),changed,'text'),

@@ -126,3 +126,37 @@ button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 @keyframes aira-transform{from{opacity:.65;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:760px){.aira-companion{width:105px}.aira-companion.is-small{width:67px}.move-hero .aira-companion{width:95px}.aira-movement-heading .aira-companion{width:62px}.aira-postcard{padding:17px}.aira-autoflow-choice{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.aira-companion,.aira-companion .aira-arm-right,.aira-companion .aira-spark,.move-next.is-adapted{animation:none!important;transition:none!important}}
+
+/* V4 / Interactive Movement Film — a quiet, state-directed stage with two honest paths. */
+.aira-director{display:flex;align-items:flex-start;gap:13px;padding:14px 17px;margin:7px 0 17px;border:1px solid #cfdfd2;border-radius:17px;background:#f7fbf6;min-height:88px;transition:background .45s ease,border-color .45s ease;animation:aira-scene-arrive .38s ease both}
+.aira-director-mark{width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:#e3efdf;color:#41765b;font-size:20px}
+.aira-director-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.aira-director-chapter{font-size:9px;font-weight:800;letter-spacing:.15em;color:#567e64}
+.aira-director-line{font-family:Georgia,serif;font-size:clamp(17px,2.8vw,22px);font-weight:500;color:#274b39;line-height:1.26}
+.aira-director-hint{font-size:12px;color:#63776d;line-height:1.35}
+.move-scene[data-beat="quiet"] .aira-director{background:#f7f8f1;border-color:#e4e7d9}
+.move-scene[data-beat="quiet"] .aira-director-mark{background:#e9eae3}
+.move-scene[data-beat="recover"] .aira-director{background:#e9f4eb;border-color:#bcd7c3}
+.move-scene[data-beat="adapt"] .aira-director{background:#e6f4dc;border-color:#a3cbad;box-shadow:0 8px 24px rgba(75,137,89,.08)}
+.move-scene[data-beat="paused"] .aira-director{background:#edf0f3;border-color:#d5dde0}
+.move-scene[data-beat="transition"] .aira-director{background:#eff4ed;border-color:#cbdec8}
+.aira-choice-canvas{margin:14px 0 21px;padding:20px;border-radius:22px;background:linear-gradient(155deg,#f4faf0,#edf4ee);border:1px solid #c4dac6;box-shadow:0 14px 32px rgba(43,80,51,.07);animation:aira-scene-arrive .35s ease both}
+.aira-choice-heading{display:flex;flex-direction:column;gap:5px}.aira-choice-heading .move-overline{margin:0}.aira-choice-heading .move-panel-title{margin:0}
+.aira-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0 9px}
+.move-button.aira-choice-card{background:#fff;color:#315242;border:2px solid #dae6d9;border-radius:19px;min-width:0;min-height:260px;padding:14px 12px;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:7px;box-shadow:none;white-space:normal;line-height:1.3;transition:transform .2s ease,border-color .2s ease,background-color .2s ease,box-shadow .2s ease}
+.move-button.aira-choice-card:hover{transform:translateY(-2px);border-color:#90b99e;box-shadow:0 8px 17px rgba(40,78,50,.08)}
+.move-button.aira-choice-card.is-selected{border-color:#497c60;background:#e8f4e7;box-shadow:inset 0 0 0 1px #b0d0b5}
+.move-button.aira-choice-card:focus-visible{outline:3px solid #1c563c;outline-offset:3px}
+.aira-choice-kicker{font-size:9px;letter-spacing:.1em;font-weight:850;color:#62816e}
+.aira-choice-name{font-family:Georgia,serif;font-size:18px;line-height:1.14;font-weight:600}
+.aira-choice-description{font-size:11px;color:#5d7565;margin:0;flex:1}
+.aira-choice-duration{font-size:10px;letter-spacing:.055em;font-weight:750;color:#376d4e}
+.aira-choice-card .move-art.is-compact{border-radius:12px;min-height:93px;padding:0;margin:0;background:#f4f8f1;width:100%}
+.aira-choice-card .move-art.is-compact svg{width:100%;height:110px;max-width:none}
+.aira-choice-card .move-art-rhythm{display:none}
+.aira-choice-footnote{font-size:11px;color:#6e8475;margin:10px 0 0;line-height:1.4}
+@keyframes aira-scene-arrive{from{opacity:.6;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:620px){.aira-choice-canvas{padding:13px;border-radius:17px}.aira-choice-grid{gap:9px}.move-button.aira-choice-card{padding:11px 8px;min-height:252px}.aira-choice-name{font-size:16px}.aira-choice-card .move-art.is-compact svg{height:100px}.aira-director{padding:12px 13px}.aira-director-hint{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.aira-director,.aira-choice-canvas,.move-button.aira-choice-card{animation:none!important;transition:none!important;transform:none!important}}
+
+.move-scene[data-beat="quiet"] .aira-director-hint{display:none}

@@ -25,7 +25,8 @@ test('a lighter next move changes title, illustration, instructions and actual s
  await page.getByRole('button',{name:/Start .*session/}).click();
  await page.clock.fastForward(10_500);
  await page.getByRole('button',{name:/Continue to March in place/}).click();
- await page.getByRole('button',{name:'Make next flow lighter'}).click();
+ await page.getByRole('button',{name:/Explore two paths/}).click();
+ await page.getByRole('button',{name:/Gentler path: Gentle weight shifts/}).click();
  await page.getByRole('button',{name:'View plan'}).click();
  await expect(page.locator('.move-overlay-panel')).toContainText('Gentle weight shifts');
  await page.getByRole('button',{name:'Close'}).click();
@@ -56,4 +57,46 @@ test('living companion appears and hands-free option remains user-controlled',as
  await expect(page.getByRole('button',{name:/On · Turn off/i})).toBeVisible();
  await page.getByRole('button',{name:/Start 1:15 session/i}).click();
  await expect(page.locator('.aira-movement-heading .aira-companion')).toBeVisible();
+});
+
+
+test('Choice Canvas exposes both illustrated futures and a reversible selection',async({page})=>{
+ await page.clock.install();await page.goto('/');
+ await page.getByRole('button',{name:/Make my session/}).click();
+ await page.getByRole('button',{name:/See my plan/}).click();
+ await page.getByRole('button',{name:/Start .*session/}).click();
+ await page.clock.fastForward(10_500);
+ await page.getByRole('button',{name:/Continue to March in place/}).click();
+ await page.getByRole('button',{name:/Explore two paths/}).click();
+ const panel=page.getByLabel('Choose the next movement');
+ await expect(panel).toContainText('Two ways forward');
+ await expect(panel.getByRole('button',{name:/Steady path: Side steps/})).toHaveAttribute('aria-pressed','true');
+ await panel.getByRole('button',{name:/Gentler path: Gentle weight shifts/}).click();
+ await expect(panel.getByRole('button',{name:/Gentler path: Gentle weight shifts/})).toHaveAttribute('aria-pressed','true');
+ await expect(panel).toContainText('Gentle weight shifts');
+ await page.getByRole('button',{name:'View plan'}).click();
+ await expect(page.locator('.move-overlay-panel')).toContainText('Gentle weight shifts');
+ await page.getByRole('button',{name:'Close',exact:true}).click();
+ await panel.getByRole('button',{name:/Steady path: Side steps/}).click();
+ await expect(panel.getByRole('button',{name:/Steady path: Side steps/})).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','introduce');
+});
+
+test('Scene Director visibly reflects quiet time, pause, and recovery',async({page})=>{
+ await page.clock.install();await page.goto('/');
+ await page.getByRole('button',{name:/Make my session/}).click();
+ await page.getByRole('button',{name:/See my plan/}).click();
+ await page.getByRole('button',{name:/Start .*session/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','introduce');
+ await page.clock.fastForward(5_000);
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','quiet');
+ await page.getByRole('button',{name:/Pause session/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','paused');
+ await page.getByRole('button',{name:/Resume session/}).click();
+ await page.clock.fastForward(5_500);
+ await page.getByRole('button',{name:/Continue to March in place/}).click();
+ await page.clock.fastForward(20_500);
+ await page.getByRole('button',{name:/Continue to A breathing break/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','recover');
+ await expect(page.getByLabel('Choose the next movement')).toBeVisible();
 });

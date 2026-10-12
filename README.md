@@ -62,3 +62,11 @@ See [docs/IMPLEMENTATION_PLAN_V2.md](docs/IMPLEMENTATION_PLAN_V2.md) for the scr
 An original expressive SVG companion responds to session state (hello, movement, recovery, adaptation, pause, finish). Choosing a gentler second movement updates the next card, timing, instruction, illustration, and factual summary. The summary closes with a personalized, deterministic postcard based on recorded decisions.
 
 Optional **hands-free flow** appears in Plan preview and during active movement. When enabled, each simulated phase waits three seconds after completion before starting the next; **Stay here**, manual Continue and disabling hands-free remain available. Hands-free is OFF by default. The original OpenUI renderer and studio remain available; no sensors, physical results, synthetic voice, or provider calls are implied. Character animations honor `prefers-reduced-motion`.
+
+## V4 — The Interactive Movement Film
+
+AiRA's new **Scene Director** turns trusted session progress into six visual beats: Introduce, Quiet, Recover, Adapt, Paused and Transition. Instructions become quieter once the movement has begun rather than repeating chatter. This is deliberately **offline, deterministic scene direction**, not claimed as an LLM inference.
+
+During March in place, choose **Explore two paths for what comes next** to open the illustrated **Choice Canvas**. During the breathing break, it is already available. Choose between Side steps and Gentle weight shifts: the illustration, instruction, next duration and summary reflect the choice. Switch back before the next phase starts. Neither choice resets the currently running timer. All choices are explicit, keyboard-operable and visibly selected.
+
+See [docs/CREATIVE_V4.md](docs/CREATIVE_V4.md) for the design rationale and demonstration path. Tests now cover the scene beats and branching safeguards. Local unit/HTTP testing has passed; full browser and live-provider testing still require the evaluator machine.
