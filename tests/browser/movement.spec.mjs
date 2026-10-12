@@ -100,3 +100,24 @@ test('Scene Director visibly reflects quiet time, pause, and recovery',async({pa
  await expect(page.locator('.move-scene')).toHaveAttribute('data-beat','recover');
  await expect(page.getByLabel('Choose the next movement')).toBeVisible();
 });
+
+test('reviewer preview demonstrates choices and rest without fabricating completed movement',async({page})=>{
+ await page.goto('/');
+ await page.getByRole('button',{name:/Explore the interactive preview/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','flow_a');
+ await expect(page.locator('.aira-tour-progress')).toContainText('01 / 03');
+ await expect(page.getByLabel('Choose the next movement')).toBeVisible();
+ await page.getByRole('button',{name:/Gentler path: Gentle weight shifts/}).click();
+ await expect(page.locator('.move-next')).toContainText('Gentle weight shifts');
+ await page.getByRole('button',{name:/Next: Explore recovery/}).click();
+ await expect(page.locator('.aira-tour-progress')).toContainText('02 / 03');
+ await page.getByRole('button',{name:/Give me 10 more seconds/}).click();
+ await page.getByRole('button',{name:/See your preview postcard/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','summary');
+ await expect(page.locator('.aira-postcard')).toContainText('preview');
+ await expect(page.locator('.move-stats')).toContainText('0 / 5');
+ await expect(page.locator('.move-change-list')).toContainText('Gentle weight shifts');
+ await expect(page.locator('.move-change-list')).toContainText('recovery');
+ await page.getByRole('button',{name:/Start a full workout/}).click();
+ await expect(page.locator('.move-scene')).toHaveAttribute('data-stage','welcome');
+});

@@ -70,3 +70,9 @@ AiRA's new **Scene Director** turns trusted session progress into six visual bea
 During March in place, choose **Explore two paths for what comes next** to open the illustrated **Choice Canvas**. During the breathing break, it is already available. Choose between Side steps and Gentle weight shifts: the illustration, instruction, next duration and summary reflect the choice. Switch back before the next phase starts. Neither choice resets the currently running timer. All choices are explicit, keyboard-operable and visibly selected.
 
 See [docs/CREATIVE_V4.md](docs/CREATIVE_V4.md) for the design rationale and demonstration path. Tests now cover the scene beats and branching safeguards. Local unit/HTTP testing has passed; full browser and live-provider testing still require the evaluator machine.
+
+## V5 — explore the experience quickly
+
+The welcome screen now offers **Explore the interactive preview**. This fast interactive reviewer path opens the real Choice Canvas during March in place, lets you choose a future movement, jumps to a real breathing-break timer for an extra-ten-seconds demonstration, and closes with a **preview** postcard based only on actual visited phases and decisions. Jumped scenes are recorded as skipped, not as fabricated completions. A clear **Start a full workout** button resets all tour state.
+
+See [docs/REVIEWER_EXPERIENCE.md](docs/REVIEWER_EXPERIENCE.md) for the three-moment script, safeguards and the desktop/mobile screenshot test. The provided harness's static safety policy excludes audio APIs, so voice narration was intentionally deferred. Local Node tests do not substitute for a full Playwright browser run; please verify on the target machine before submission.

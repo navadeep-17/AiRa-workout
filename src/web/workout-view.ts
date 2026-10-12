@@ -97,7 +97,7 @@ function helperLine(s:WorkoutSession){const n=el('p',s.message||'You’re in con
 export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>void)[]):HTMLElement {
  const root=el('article','','move-scene stage-'+s.stage+(s.lightened?' has-adaptation':''));root.dataset.stage=s.stage;
  const brand=group('move-brand',el('span','a','move-mark'),el('span','aira','move-wordmark'),el('span','/ move','move-wordmark-suffix'));
- const badge=el('span','●  FICTIONAL SIMULATION','move-sim-badge');
+ const badge=el('span',s.showcase?'✳  INTERACTIVE PREVIEW · NOT A COMPLETED WORKOUT':'●  FICTIONAL SIMULATION','move-sim-badge');
  root.append(group('move-scene-top',brand,badge));
  const body=group('move-scene-body');root.append(body);
  const push=(...nodes:HTMLElement[])=>body.append(...nodes);
@@ -107,6 +107,7 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
      livingCompanion('hello'),headline('Movement that\nmoves with you.','move-hero-title')),
      copy('A little movement, thoughtful guidance, and a plan that changes when you do.','move-lead'),
      action('Make my session  ↗',()=>s.toSetup(),changed,'primary large'),
+     group('aira-tour-invite',group('aira-tour-invite-copy',el('span','A SHORTCUT FOR THE CURIOUS','aira-tour-kicker'),el('strong','Experience the magic in under a minute.'),copy('Choose a new path, make room to recover, and see a personal note. Nothing is marked as a completed workout.','move-small')),action('Explore the interactive preview  ↗',()=>s.startShowcase(),changed,'secondary')),
      action('How does this demo work?',()=>s.toggleHow(),changed,'text'));
    if(s.showHow)push(copy('Preview five gentle movement ideas, then simulate each interval. You can pause, add rest or choose a lighter next activity. No movement or sensors are tracked.','move-explain'));
    push(group('move-welcome-bottom',el('span','01 — CHOOSE','move-small'),el('span','02 — MOVE','move-small'),el('span','03 — ADAPT','move-small')));
@@ -127,10 +128,11 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
      group('move-actions',action('Adjust choices',()=>s.edit(),changed,'text'),action(`Start ${formatDuration(s.totalPlanned)} session  ↗`,()=>s.start(),changed,'primary large')));
  }
  if(s.activePhase){
+   if(s.showcase)push(group('aira-tour-progress',label(s.stage==='flow_a'?'INTERACTIVE PREVIEW · 01 / 03 · CHOOSE YOUR PATH':'INTERACTIVE PREVIEW · 02 / 03 · MAKE ROOM TO RECOVER','aira-tour-status'),action('Exit preview',()=>s.reset(),changed,'text')));
    const phase=s.activePhase,idx=s.phaseIndex;
    root.classList.toggle('stage-recovery',phase==='recovery');
    const movement=s.movement(phase);
-   push(group('move-between',label(`MOVEMENT ${idx+1} OF 5  /  ${s.waiting?'COMPLETE':s.paused?'PAUSED':'IN PROGRESS'}`),el('span',`0${idx+1} / 05`,'move-index')),
+   push(group('move-between',label(s.showcase?`PREVIEW SCENE ${phase==='flow_a'?'1':'2'} OF 3  /  ${s.waiting?'READY':s.paused?'PAUSED':'IN PROGRESS'}`:`MOVEMENT ${idx+1} OF 5  /  ${s.waiting?'COMPLETE':s.paused?'PAUSED':'IN PROGRESS'}`),el('span',`0${idx+1} / 05`,'move-index')),
       phaseProgress(idx),group('aira-movement-heading',group('aira-movement-copy',headline(movement.title,'move-phase-title'),copy(movement.instruction,'move-phase-note')),livingCompanion(companionMood(s),true)));
    const t=s.timer();
    const dial=group('move-dial');dial.setAttribute('role','timer');dial.setAttribute('aria-label','Simulated countdown');
@@ -145,34 +147,35 @@ export function renderWorkout(s:WorkoutSession,changed:()=>void,updates:(()=>voi
    updates.push(direct);direct();push(director);
    push(group('move-context-note',el('span','AIRA SAYS','move-context-label'),copy(s.lightened&&['flow_a','recovery'].includes(phase)?'You asked for something gentler. I changed what comes next, not just the countdown.':movement.detail,'move-small')));
    const controls=group('move-phase-actions');
-   if(s.waiting){const next=PHASE_KEYS[idx+1];controls.append(action(next?`Continue to ${s.movement(next).title}  ↗`:'See my summary  ↗',()=>s.next(),changed,'primary large'));
+   if(s.waiting&&!s.showcase){const next=PHASE_KEYS[idx+1];controls.append(action(next?`Continue to ${s.movement(next).title}  ↗`:'See my summary  ↗',()=>s.next(),changed,'primary large'));
      if(s.autoCountdown!==null){const countdown=copy('', 'aira-next-countdown');const updateCountdown=()=>{countdown.textContent=`Next scene in ${s.autoCountdown??0}s · you can stay here`;};updates.push(updateCountdown);updateCountdown();controls.append(countdown,action('Stay here',()=>s.holdNext(),changed,'secondary'));}
    }
-   else if(s.paused&&t?.status==='stopped'){controls.append(action('Begin this phase  ↗',()=>s.beginReady(),changed,'primary large'));}
-   else controls.append(action(s.paused?'Resume session  ▶':'Pause session  Ⅱ',()=>s.togglePause(),changed,'primary large'));
+   else if(s.paused&&t?.status==='stopped'&&!s.showcase){controls.append(action('Begin this phase  ↗',()=>s.beginReady(),changed,'primary large'));}
+   else if(!s.waiting)controls.append(action(s.paused?'Resume session  ▶':'Pause session  Ⅱ',()=>s.togglePause(),changed,'primary large'));
+   if(s.showcase)controls.append(action(phase==='flow_a'?'Next: Explore recovery  ↗':'See your preview postcard  ↗',()=>phase==='flow_a'?s.showcaseToRecovery():s.showcaseToPostcard(),changed,'primary large aira-tour-next'));
    if(phase==='recovery'&&!s.waiting){const extend=action(s.recoveryAdded>=30?'Maximum extra time added':'+ Give me 10 more seconds',()=>s.extendRecovery(),changed,'secondary');extend.disabled=s.recoveryAdded>=30;controls.append(extend);}
    if((phase==='flow_a'||phase==='recovery')&&!s.waiting&&!s.choiceOpen){
      controls.append(action('Explore two paths for what comes next  ↗',()=>s.showChoices(),changed,'secondary'));
    }
    push(controls);
    if((phase==='flow_a'||phase==='recovery')&&s.choiceOpen&&!s.waiting)push(choiceCanvas(s,changed));
-   if(!s.waiting)push(group('aira-autoflow-mini',copy(s.autoFlow?'HANDS-FREE FLOW · ON':'HANDS-FREE FLOW · OFF','move-small'),action(s.autoFlow?'Turn off':'Turn on',()=>s.setAutoFlow(!s.autoFlow),changed,'text')));
+   if(!s.waiting&&!s.showcase)push(group('aira-autoflow-mini',copy(s.autoFlow?'HANDS-FREE FLOW · ON':'HANDS-FREE FLOW · OFF','move-small'),action(s.autoFlow?'Turn off':'Turn on',()=>s.setAutoFlow(!s.autoFlow),changed,'text')));
    const next=PHASE_KEYS[idx+1];if(next)push(group('move-next'+(s.lightened&&next==='flow_b'?' is-adapted':''),label('UP NEXT','move-small'),el('strong',desc(s,next)),...(s.lightened&&next==='flow_b'?[el('span','✦  UPDATED TO MATCH YOUR ENERGY','aira-adapt-label')]:[])));
    push(group('move-bottom-actions',action('View plan',()=>s.togglePlan(),changed,'text'),
-     ...(s.waiting?[]:[action('Skip phase',()=>s.askSkip(),changed,'text')]),action('End session',()=>s.askEnd(),changed,'text danger-link')));
+     ...(s.waiting||s.showcase?[]:[action('Skip phase',()=>s.askSkip(),changed,'text')]),...(s.showcase?[]:[action('End session',()=>s.askEnd(),changed,'text danger-link')])));
    push(helperLine(s));
  }
  if(s.stage==='summary'){
-   const count=s.completed,heading=s.endedEarly?'You chose when to stop.':'You moved through it.';
+   const count=s.completed,heading=s.showcase?'A glimpse of what could be.':s.endedEarly?'You chose when to stop.':'You moved through it.';
    const personalLine=s.lightened&&s.recoveryAdded?'You made room to breathe and chose the gentler route. This session followed your lead.':s.lightened?'You chose the gentler route. Your next movement changed with you.':s.recoveryAdded?'You asked for more breathing room. The session made space for it.':s.endedEarly?'You chose to finish here. Your session respects that choice.':'You found a rhythm that felt right for this short moment.';
-   push(group('aira-postcard',label('A SMALL NOTE FROM AIRA'),livingCompanion('celebrate'),headline('You found your own pace.'),copy(personalLine,'aira-postcard-note')),label('YOUR SESSION / COMPLETE'),headline(heading),copy('Here’s your simulated session, including every change you made along the way.','move-lead'));
+   push(group('aira-postcard',label(s.showcase?'YOUR INTERACTIVE PREVIEW POSTCARD':'A SMALL NOTE FROM AIRA'),livingCompanion('celebrate'),headline(s.showcase?'The next step was yours to choose.':'You found your own pace.'),copy(personalLine,'aira-postcard-note')),label(s.showcase?'PREVIEW / NOT A COMPLETED WORKOUT':'YOUR SESSION / COMPLETE'),headline(heading),copy(s.showcase?'You visited two real interactive moments. Unvisited phases were not simulated or counted as completed. The choices below are exactly what you tried.':'Here’s your simulated session, including every change you made along the way.','move-lead'));
    const numbers=group('move-stats',group('move-stat',el('strong',`${count} / 5`),copy('phases completed','move-small')),
      group('move-stat',el('strong',formatDuration(s.elapsed)),copy('simulated phase time','move-small')),
      group('move-stat',el('strong',String(s.skipped)),copy('phases skipped','move-small')));
    push(numbers,label('THE WAY YOU MADE IT YOURS','move-field-label'));
    const changes=group('move-change-list');if(!s.changes.length)changes.append(copy('No adjustments needed.','move-small'));else s.changes.forEach(t=>changes.append(group('move-change',el('span','✓'),el('span',t))));push(changes);
    const details=group('move-summary-detail');s.records.forEach(r=>details.append(group('move-summary-row',el('span',r.movementTitle),el('strong',`${r.outcome==='completed'?'Finished':'Skipped'} · ${formatDuration(r.seconds)}`))));push(details);
-   push(action('Try another session  ↗',()=>s.reset(),changed,'primary large'),copy('No heart rate, calories or physical activity were measured.','move-small'));
+   push(action(s.showcase?'Start a full workout  ↗':'Try another session  ↗',()=>s.reset(),changed,'primary large'),copy('No heart rate, calories or physical activity were measured.','move-small'));
  }
  root.append(group('move-scene-footer',el('span','AIRA / MOVE EXPERIMENT','move-small'),el('span','LOCAL · TEXT ONLY','move-small')));
  root.append(shortPlan(s,changed));root.append(confirmation(s,changed));

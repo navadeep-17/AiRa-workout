@@ -131,3 +131,39 @@ test('ending while countdown is pending cancels auto transition and preserves co
  assert.equal(s.stage,'summary');assert.equal(s.completed,1);assert.equal(s.skipped,0);
  assert.equal(s.autoCountdown,null);assert(s.reset());assert.equal(s.autoFlow,false);
 });
+
+test('reviewer tour starts from welcome at a real second-scene timer without fabricated completion',()=>{
+ const {s,clock}=create();
+ assert(s.startShowcase());assert.equal(s.showcase,true);assert.equal(s.stage,'flow_a');
+ assert.equal(s.choiceOpen,true);assert.equal(s.records.length,0);assert.equal(s.completed,0);
+ assert.equal(s.autoFlow,false);assert.equal(s.totalPlanned,75);
+ assert.equal(s.startShowcase(),false);
+ clock.forward(3);assert.equal(s.timer().remaining,17);
+ assert(s.lightenNext());assert.equal(s.duration('flow_b'),12);
+ assert.equal(s.timer().remaining,17);
+ assert(s.showcaseToRecovery());assert.equal(s.stage,'recovery');assert.equal(s.recoveryAdded,0);
+ assert.equal(s.records.length,1);assert.equal(s.records[0].outcome,'skipped');assert.equal(s.records[0].seconds,3);
+ assert.equal(s.completed,0);
+ assert(s.extendRecovery());assert.equal(s.totalPlanned,77);
+ clock.forward(2);assert(s.showcaseToPostcard());assert.equal(s.stage,'summary');
+ assert.equal(s.records.length,2);assert.equal(s.records[1].seconds,2);
+ assert.equal(s.completed,0);assert.equal(s.elapsed,5);assert.equal(s.recoveryAdded,10);
+ assert.equal(s.showcase,true);assert.equal(s.showcaseToRecovery(),false);
+ assert(s.reset());assert.equal(s.showcase,false);assert.equal(s.stage,'welcome');
+ assert.equal(s.totalPlanned,75);assert.equal(s.lightened,false);assert.equal(s.records.length,0);
+});
+
+test('reviewer tour can respect actual completed phases and be exited without stale records',()=>{
+ const {s,clock}=create();assert(s.startShowcase());clock.forward(21);assert(s.tick());
+ assert(s.showcaseToRecovery());assert.equal(s.records[0].outcome,'completed');
+ assert.equal(s.completed,1);assert(s.reset());assert(s.toSetup());assert(s.toPreview());assert(s.start());
+ assert.equal(s.showcase,false);assert.equal(s.stage,'settle');assert.equal(s.completed,0);
+});
+
+test('reviewer tour keeps modal and flow guards intact',()=>{
+ const {s}=create();assert.equal(s.showcaseToPostcard(),false);
+ assert(s.startShowcase());assert(s.askEnd());assert.equal(s.showcaseToRecovery(),false);
+ assert(s.dismissModal());assert(s.showcaseToRecovery());assert(s.askSkip());
+ assert.equal(s.showcaseToPostcard(),false);
+ assert(s.dismissModal());assert(s.showcaseToPostcard());assert.equal(s.showcaseToPostcard(),false);
+});

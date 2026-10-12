@@ -68,11 +68,19 @@
       "status": "added"
     },
     {
+      "path": "docs/CREATIVE_V4.md",
+      "status": "added"
+    },
+    {
       "path": "docs/IMPLEMENTATION_PLAN_V2.md",
       "status": "added"
     },
     {
       "path": "docs/MOVE.md",
+      "status": "added"
+    },
+    {
+      "path": "docs/REVIEWER_EXPERIENCE.md",
       "status": "added"
     },
     {
@@ -89,6 +97,10 @@
     },
     {
       "path": "src/shared/coach.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/shared/scene-director.ts",
       "status": "added"
     },
     {
@@ -116,6 +128,14 @@
       "status": "added"
     },
     {
+      "path": "tests/browser/reviewer.spec.mjs",
+      "status": "added"
+    },
+    {
+      "path": "tests/scene-director.test.mjs",
+      "status": "added"
+    },
+    {
       "path": "tests/workout-intents.test.mjs",
       "status": "added"
     },
@@ -130,12 +150,14 @@
     ".gitignore": "2e5bf9b24b8e35f4af719d04fd9354ea6515ce25a21ded012bfda84469ab711f",
     "AGENTS.md": "0732eec4682840a66d00db360cb54fc5a62fa881fc3e77da9c994cb0a619e3f5",
     "docs/CREATIVE_V3.md": "ea6e9de323e7896c900f2a6ba9922fc090bfcf6193f86b55a1a661c0c702621c",
+    "docs/CREATIVE_V4.md": "80245708eec842238dee0d78ffe03fba6cfa3ca0abca69fcc0d0c382b8f85ab3",
     "docs/EXERCISE.md": "b1b5ffc20b5e2d8190e71f1fbb27e70d82e79c11b37603cd09752891a15a5820",
     "docs/HARNESS.md": "6e602568e09c68c9a965885c216abd2bd1356aba3ded7d5202a32d7bd7eab365",
     "docs/IMPLEMENTATION_PLAN_V2.md": "ed7cee5fce7a44beadfbd8024ce22a4e0b9ca31c4df3f21dc8fe3429b714849c",
     "docs/MOVE.md": "9a267d4e486c136614ec95c9afbf150a6cee5c1d925d3531bd7a0c81ad93b8df",
+    "docs/REVIEWER_EXPERIENCE.md": "15ee06b9b741c103c74e8470f747954c1faa35a0aca5e3a0bc6393311052b6d9",
     "docs/RUNTIMES.md": "865086d2d31d43c6ba631b7106baad35d01c473bc144653fd541f8b950fd6abf",
-    "docs/SUBMISSION_NOTE.md": "7c7a511a8593660ad58edb57cd013ad96bdb7bd4060fbdccc5176cde3a693f5d",
+    "docs/SUBMISSION_NOTE.md": "eb74f06fdd0b9e6f42892344de0246d2b0694932141fc1d6a91762a2ebc3463e",
     "evidence/README.md": "cb2f0e671ea6b1d2ddb8829bc7a64a3feab60f53b5c9b8b809cd37c9d403cc26",
     "examples/wiring.openui": "c9b83ae435f3b96c721da9502a5a77b36052bf5035101d56b58fa215a8e54324",
     "package-lock.json": "ea3dff87ebda23e276a90d9006720a48d2c4e6c8c429bbf80936e9713bb1933d",
@@ -143,7 +165,7 @@
     "playwright.config.mjs": "118aac1c8e8f3d40e9b1562b5b88503a34e22568793357ffe89483108b9a6d65",
     "prompts/context.md": "e4732a5acd27c946e8ee18f967b3d5a7b3de158036be98542fc2f73e46130c73",
     "prompts/system.md": "cda5716bc1d0793b171ec52969e06ac47a1ae771e1cd6a539b11c82b832688c8",
-    "README.md": "0083f2ecdf8521c6e8e8108cb32b1cb82783738b692b384f33e13efdef58b009",
+    "README.md": "6e823e896462b8ce1f828067c06096b415599807b11b46fe98e3dedf1a329543",
     "scripts/build.mjs": "044dc54fed3c9c7ef29a3ad50575fdcabd1aeaa605f70c2e60ceb750cdd1e564",
     "scripts/lint.mjs": "c9132cec1cd4d309853355a196baa76c1bd0b2e94b0c745a008bfc0dbb1916f4",
     "scripts/package.mjs": "57ff07fffe805c5814375e20d9ac4d787d54764357bff40db7c64a6c512b84c6",
@@ -170,25 +192,28 @@
     "src/shared/openui/timer-store.ts": "3edc69b08716a678d99e699f29b905c3a2ffa2e03eab02132a3a130ecbc03d8f",
     "src/shared/openui/validate.ts": "a6f5089957be853ab794b12563c0a064d1dc6120c86b8e565f66a5f29acd21a6",
     "src/shared/redact.ts": "126cf5fb154d1cddd0f3eb8f168e89701e80f524c440c537f4fef5b444431222",
+    "src/shared/scene-director.ts": "8497f77181082324b968c8074d6a3e875f956d111b9046a0c513335665d148b6",
     "src/shared/schema.ts": "d466e4028d754be7729b9eedcf395faf2129406782bdc1aa47a2f89533568bcb",
     "src/shared/workout-intents.ts": "0ab79ed44abcf83190aa4e9709c8b8aa53297f6b59e55232ed15d5c8cd8c2ed9",
-    "src/shared/workout-session.ts": "6d068fb7a316da44bbaac0d3570615664b6e3cb37171db58f5c8bb88a137507c",
+    "src/shared/workout-session.ts": "90de12cda9d1e5566229433cf6ac7c7892d0decc694a87ec202c29e6b3336740",
     "src/web/app.ts": "2f8d66b74da93c91380a9f7631cd30a8b7d1ab9feec0f71a481f704da506e61b",
     "src/web/components.ts": "3d123404c86253ebb0b0daaa470102293ecf970ea80e781d04d3d1414153abb8",
     "src/web/dom.ts": "59352bc4243ecc84610b69098b956fb1ddc794cc1ebe38b9302d1e166694b401",
     "src/web/index.html": "e996d3a0d00ee45c469abdad2e7e25ce07124bb4852a68303536f5490a6efe35",
     "src/web/living-companion.ts": "1a9a08ee984d2359b3203b82a9a52e297b1fb1767ee38a9a2691451b39b5033c",
-    "src/web/styles.css": "654fc531b71d87689babc950d2a7ad5db2b508d69cfb94f8d2087d193f63f3f8",
-    "src/web/workout-view.ts": "d5dfa26881d459a1d9aee1c402a68689807be9029a0a1880d40bdc85e0661002",
+    "src/web/styles.css": "b66ea65894342964e151abb773dc1a6cf5a20917c90e23152dfe3d05a3281817",
+    "src/web/workout-view.ts": "062d3586259ce0d7e8845334f77f5b1de5d94be047055d64112fbf2474d3717b",
     "tests/browser/app.spec.mjs": "8ddc2dfea9429bb270fc7a5d729a833cd3227758f72e10e100450281273cf29d",
     "tests/browser/coach.spec.mjs": "a1f8bb6c093e8a12fd0b82e77a153509bf50f968d6f565186d74891707ef6661",
-    "tests/browser/movement.spec.mjs": "ba1135617464b6928b5c9a4b8ef155339516a93b1f3e5707691eb9202f87e41f",
+    "tests/browser/movement.spec.mjs": "5ba4501cd563c25b843fba4b74eec56e3ed6ae877e66775e2b200817420b37e0",
+    "tests/browser/reviewer.spec.mjs": "bbda7f7f564261c70e0484bab65754719348a55f0d7720e67c089ceb785554b0",
     "tests/cli.test.mjs": "2b9bf2e26ab4dcb0b421925eb5bc7281b1d5dc4e98f40097b26cb1a9b2b8a030",
     "tests/core.test.mjs": "df8ff8f84535b40c3e25a5bd5b85210ef6b764808cc7e6a7bfb43a5fb204b133",
     "tests/http.test.mjs": "b24c2860d2dd21f4815cdb9ba3c17f529e96d7750f8ce19eb95efa0017e31158",
     "tests/package.test.mjs": "31334741b94a966dfa52da9e28d96d77ea451e69c76219fd2e895cd38c2e52c2",
+    "tests/scene-director.test.mjs": "b903a20cfcf761939ff9650634e6fa7e31e21d73a9f1f61e12b4e6ef35a71935",
     "tests/workout-intents.test.mjs": "c2c3a931a3555bb0b91ceffd8ff4dfa1f9cc2684b527b3912d51dda6dd35c2ce",
-    "tests/workout.test.mjs": "0b97e34931d196e5305f876f198eb0fe017a6677bd65a538babe3edd9f5731f1",
+    "tests/workout.test.mjs": "55ac57ab26520d61e274d52a6b8ad3e42ed599a9ed9db823a9486b371154b908",
     "tsconfig.json": "689b9d5e639349067d9542489e0ba9d1a11ca1581fa51934a55d46bf41e76626"
   },
   "runFiles": [],

@@ -41,7 +41,7 @@ export class WorkoutSession {
   readonly timers:TimerLedger;
   stage:Stage='welcome';preset:Preset='quick';pace:Pace='steady';modal:Modal=null;
   paused=false;waiting=false;endedEarly=false;showPlan=false;showHow=false;choiceOpen=false;
-  recoveryAdded=0;lightened=false;message='';revision=0;autoFlow=false;
+  recoveryAdded=0;lightened=false;message='';revision=0;autoFlow=false;showcase=false;
   private autoNextAt:number|null=null;
   readonly records:SessionRecord[]=[];readonly changes:string[]=[];
   private activeSeconds:Record<Phase,number>={settle:10,flow_a:20,recovery:15,flow_b:20,wind_down:10};
@@ -88,6 +88,33 @@ export class WorkoutSession {
   toPreview(){if(this.stage!=='setup')return false;this.stage='preview';return this.mark('Your simulated plan is ready.');}
   edit(){if(this.stage!=='preview')return false;this.stage='setup';return this.mark('Make it yours.');}
   start(){if(this.stage!=='preview')return false;this.records.length=0;this.changes.length=0;this.endedEarly=false;this.timers.forget();this.autoNextAt=null;this.choiceOpen=false;this.enter('settle');return this.mark('Session started · simulated only.');}
+  /** Evaluator tour: real local controls, no invented completion records or timer fast-forward. */
+  startShowcase(){
+    if(this.stage!=='welcome')return false;
+    this.showcase=true;this.autoFlow=false;this.endedEarly=false;this.showPlan=false;this.showHow=false;
+    this.records.length=0;this.changes.length=0;this.recoveryAdded=0;this.lightened=false;
+    this.rebuildPlan();this.timers.forget();this.enter('flow_a');this.choiceOpen=true;
+    return this.mark('Interactive preview, moment one of three. Try choosing a gentler next movement.');
+  }
+  private recordShowcaseMoment(){
+    const phase=this.activePhase,t=this.timer();if(!phase||!t)return false;
+    const seconds=this.waiting?this.duration(phase):Math.max(0,t.seconds-t.remaining);
+    this.records.push({phase,outcome:this.waiting?'completed':'skipped',seconds,plannedSeconds:this.duration(phase),movementTitle:this.movement(phase).title});
+    this.timers.forget(phase);this.autoNextAt=null;this.choiceOpen=false;
+    return true;
+  }
+  showcaseToRecovery(){
+    if(!this.showcase||this.stage!=='flow_a'||this.modal)return false;
+    if(!this.recordShowcaseMoment())return false;
+    this.enter('recovery');
+    return this.mark('Interactive preview, moment two of three. Try adding ten seconds of breathing room.');
+  }
+  showcaseToPostcard(){
+    if(!this.showcase||this.stage!=='recovery'||this.modal)return false;
+    if(!this.recordShowcaseMoment())return false;
+    this.stage='summary';this.waiting=false;this.paused=false;this.endedEarly=true;
+    return this.mark('Tour finished. These are your real preview choices, not a completed workout.');
+  }
   private enter(phase:Phase){this.stage=phase;this.modal=null;this.paused=false;this.waiting=false;this.autoNextAt=null;this.choiceOpen=phase==='recovery';this.timers.ensure(phase,{label:this.movement(phase).title,seconds:this.duration(phase)});this.timers.start(phase);}
   tick(){if(!this.activePhase||this.modal)return false;
     if(this.waiting){if(this.autoFlow&&this.autoNextAt!==null&&this.clock()>=this.autoNextAt)return this.next();return false;}
@@ -129,5 +156,5 @@ export class WorkoutSession {
   togglePlan(){this.showPlan=!this.showPlan;return this.mark(this.showPlan?'Your session plan is visible.':'Plan closed.');}
   toggleHow(){this.showHow=!this.showHow;return this.mark(this.showHow?'How this simulation works.':'');}
   reset(){this.stage='welcome';this.preset='quick';this.pace='steady';this.modal=null;this.paused=false;this.waiting=false;this.endedEarly=false;this.showPlan=false;this.showHow=false;
-    this.recoveryAdded=0;this.lightened=false;this.choiceOpen=false;this.autoFlow=false;this.autoNextAt=null;this.records.length=0;this.changes.length=0;this.timers.forget();this.rebuildPlan();return this.mark('Ready for another little moment.');}
+    this.recoveryAdded=0;this.lightened=false;this.choiceOpen=false;this.autoFlow=false;this.showcase=false;this.autoNextAt=null;this.records.length=0;this.changes.length=0;this.timers.forget();this.rebuildPlan();return this.mark('Ready for another little moment.');}
 }
