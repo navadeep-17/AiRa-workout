@@ -5,6 +5,8 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import { APP_VERSION, SCHEMA_VERSION, isRequest, isTurn, type Versions, type Result } from '../shared/contracts.js';
 import { mockTurn } from './mock.js';
+import {isCoachRequest} from '../shared/coach.js';
+import {generateCoachCue} from './coach.js';
 import { loadPrompt } from './prompt.js';
 import { ScreenDocument } from '../shared/openui/document.js';
 import { liveTurn, PublicError } from './provider.js';
@@ -44,6 +46,25 @@ export function createApp(config: Config, transport: typeof fetch = fetch, cliTr
       const path = new URL(req.url ?? '/', 'http://localhost').pathname;
       if (path === '/api/config' && req.method === 'GET') {
         json(res, 200, { defaultProvider: 'mock', providers: providerStatuses(config), token, appVersion: APP_VERSION }); return;
+      }
+      if (path === '/api/coach' && req.method === 'POST') {
+        const supplied = Buffer.from(String(req.headers['x-local-token'] ?? ''));
+        if (supplied.length !== token.length || !timingSafeEqual(supplied, Buffer.from(token))) throw new PublicError('FORBIDDEN','Reload this local app before requesting coaching.',403);
+        if (req.headers['content-type'] !== 'application/json') throw new PublicError('INPUT','Expected application/json.',415);
+        const input = await readBody(req);
+        if (!isCoachRequest(input)) throw new PublicError('INPUT','Invalid coaching request.',400);
+        if (!config.allowLive || !config.key) throw new PublicError('OPT_IN','Live OpenAI coaching is not enabled on this computer.',403);
+        if (active >= 3) throw new PublicError('BUSY','Too many pending requests.',429);
+        active++;
+        const controller = new AbortController();
+        const timeout = setTimeout(()=>controller.abort(),18000);
+        res.once('close',()=>{if(!res.writableEnded)controller.abort();});
+        try {
+          const answer = await generateCoachCue(input,{key:config.key,model:config.model},controller.signal,transport);
+          if (!controller.signal.aborted) json(res,200,{...answer,source:'openai-api'});
+          else if (!res.destroyed) json(res,408,{error:'Coaching timed out. Your session is still available.'});
+        } finally {clearTimeout(timeout);active--;}
+        return;
       }
       if (path === '/api/turn' && req.method === 'POST') {
         const supplied = Buffer.from(String(req.headers['x-local-token'] ?? ''));

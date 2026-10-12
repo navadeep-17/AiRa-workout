@@ -17,7 +17,7 @@ The provided `TimerLedger` is reused for the current simulated phase. A tested `
 ## Modes and honesty
 
 - **Mock:** The entire session and action controls work offline. The adjacent lab exposes stage-aware command chips and recognizes `more rest`, `slower`, `pause`, `resume`, `skip`, `end session`, `continue`, `what's next`, `how much time`, and `undo`. These are local, deterministic rules; these do not invoke a language model and are not presented as real AI reasoning.
-- **OpenAIAPI / ClaudeCLI:** The original opt-in provider adapters remain available but do not own or mutate the trusted session state. Model-based text may be tested with the user's own credentials and consent. The author did **not** make a live provider call in this build.
+- **OpenAIAPI / ClaudeCLI:** An isolated OpenAIAPI coaching endpoint provides optional generated text for free-form questions after explicit consent. Local commands remain local, and no provider owns or mutates trusted session state. The original provider adapters remain for the generic wiring fixture; ClaudeCLI was not integrated into the workout coach. The author did **not** make a live provider call in this build.
 - **Voice/media:** Not supported. All coaching is visible text. No activity, health, calories or sensors are measured.
 
 ## Accessibility and resilience
@@ -31,3 +31,9 @@ Run `npm run check` and `PLAYWRIGHT_CHROME_PATH=/path/to/chrome npm run test:ui`
 ## Product refinement — contextual text guidance
 
 The active phase now renders coaching copy from trusted session state rather than always showing a generic phrase. Pause, waiting, recovery extension, gentle pacing, and the lighter second flow have distinct guidance. The Mock lab offers phase-relevant example commands and handles unknown requests without clearing or replacing the workout screens. No mock response is represented as an LLM call. Ending a completed but unadvanced phase records it as completed, and a completed phase cannot be skipped.
+
+## Optional model-generated coaching (OpenAIAPI)
+
+The model never owns the workout state. `POST /api/coach` is a separate, local-token-protected endpoint accepting only a short question and an allowlisted simulated context (phase, time, pace, pause, completed/skipped counts and adjustments). It requires `openai-api`, locally enabled API credentials and explicit consent. The OpenAI Responses API returns a short structured `cue`, rendered as inert text with provider attribution. It cannot emit OpenUI changes, tools or JavaScript. The local state machine remains usable while the model is pending or errors. A phase change, reset, consent removal or provider switch aborts/invalidates stale replies. Commands like “pause”, “more rest”, and “slow down” remain local in every provider mode.
+
+Provider tests use an injected synthetic fetch response, not real OpenAI or Claude credentials. No real model request has been executed by the author. Mock remains the default and remains fully offline.

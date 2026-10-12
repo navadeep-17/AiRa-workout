@@ -9,16 +9,37 @@ import { redactValue } from '../shared/redact.js';
 import { renderComponent } from './components.js';
 import { byId,el } from './dom.js';
 import {WorkoutSession,STAGES} from '../shared/workout-session.js';
-import {handleWorkoutIntent} from '../shared/workout-intents.js';
+import {handleWorkoutIntent,isLocalWorkoutCommand} from '../shared/workout-intents.js';
+import {coachContext} from '../shared/coach.js';
 
 type Config={providers:ProviderStatus[];token:string};let config:Config|undefined;
 const workout=new WorkoutSession();
 const workoutProgram=STAGES.map(stage=>`scene_${stage} = Screen([view_${stage}])\nview_${stage} = Workout(\"${stage}\")`).join('\n') + `\nroot = Screens([${STAGES.map(s=>`scene_${s}`).join(', ')}], scene_welcome)`;
 function seedWorkout(){const code='```openui\n'+workoutProgram+'\n```';c.document.apply(code);}
 function workoutMode(){return c.document.screens.some(s=>(s.props.children as StatementNode[]).some(n=>n.name==='Workout'));}
-function workoutChanged(){const i=c.document.screens.findIndex(s=>s.key===`scene_${workout.stage}`);if(i>=0)c.document.move(i);c.localEvent('Move / '+workout.message);}
+function workoutChanged(){invalidateCoaching();const i=c.document.screens.findIndex(s=>s.key===`scene_${workout.stage}`);if(i>=0)c.document.move(i);c.localEvent('Move / '+workout.message);}
 const timers=new TimerLedger();let previousTimers=new Map<string,TimerListEntry>(),updates:(()=>void)[]=[],paused=false,pausedTimers:string[]=[],renderKey='',lastClear=0;
 const draft=byId<HTMLTextAreaElement>('message');
+type CoachLine={role:'user'|'assistant';text:string};
+let coachSignal:AbortController|null=null,coachGeneration=0,coachPending=false,coachCue='',coachError='',coachModel='',coachHistory:CoachLine[]=[];
+function invalidateCoaching(){coachGeneration++;coachSignal?.abort();coachSignal=null;coachPending=false;coachCue='';coachError='';coachModel='';}
+async function requestLiveCoaching(question:string){
+ if(!config)return;
+ const provider=config.providers.find(p=>p.id===c.provider);
+ if(c.provider!=='openai-api'||!provider?.enabled||!c.consent){coachError='Select and enable OpenAIAPI, then opt in to model usage for a generated coaching reply.';render();return;}
+ invalidateCoaching();const generation=coachGeneration,revision=workout.revision;
+ const controller=new AbortController();coachSignal=controller;coachPending=true;coachHistory.push({role:'user',text:question});render();
+ const timeout=setTimeout(()=>controller.abort(),20000);
+ try{
+  const response=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':config.token},body:JSON.stringify({provider:'openai-api',consent:true,question,context:coachContext(workout)}),signal:controller.signal});
+  const result=await response.json();if(!response.ok)throw new Error(result.error||'Coaching is unavailable.');
+  if(generation!==coachGeneration||revision!==workout.revision||c.provider!=='openai-api'||!c.consent)return;
+  if(typeof result.cue!=='string'||result.cue.length>180)throw new Error('The coaching reply did not pass validation.');
+  coachCue=result.cue;coachModel=result.model||'OpenAIAPI';coachHistory.push({role:'assistant',text:result.cue});
+ }catch(e){if(generation!==coachGeneration)return;coachError=controller.signal.aborted?'Coach timed out; your local workout continues.':e instanceof Error?e.message:'Coaching unavailable.';}
+ finally{clearTimeout(timeout);if(generation===coachGeneration){coachPending=false;coachSignal=null;render();}}
+}
+
 const c=new Conversation(async(request:RequestData,signal:AbortSignal):Promise<Result>=>{
   const controller=new AbortController(),abort=()=>controller.abort();signal.addEventListener('abort',abort,{once:true});const timeout=setTimeout(abort,request.provider==='claude-cli'?85000:48000);
   try{const response=await fetch('/api/turn',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':config!.token},body:JSON.stringify(request),signal:controller.signal});const data=await response.json();if(!response.ok)throw new Error(data.error??'Request failed.');return data;}
@@ -28,12 +49,18 @@ const c=new Conversation(async(request:RequestData,signal:AbortSignal):Promise<R
 function makeNav(){return createRunNav({index:()=>c.document.screens.findIndex(s=>s.key===c.document.cursor),stepCount:()=>c.document.screens.length,isConsumed:()=>false,awaiting:()=>false,leave:()=>{if(c.pending)c.cancel('interrupted');},land:(from,to)=>{c.document.move(to);c.localEvent(to<from?activityClientEvents.wentBack(`step ${from+1}`,`step ${to+1}`):activityClientEvents.nowOnStep(`step ${to+1} of ${c.document.screens.length}`));},phase:()=>{},finish:()=>c.localEvent('Reached the final screen. This is not evidence of physical completion.')},{outMs:30,inMs:30});}
 let nav=makeNav();
 function send(text:string){if(!config)return;
-  if(c.provider==='mock'&&workoutMode()&&text.trim().toLowerCase()!=='load wiring sample'){
-    const outcome=handleWorkoutIntent(workout,text);
+  if(workoutMode()&&text.trim().toLowerCase()!=='load wiring sample'){
     draft.value='';
-    if(outcome.changed)workoutChanged();
+    if(c.provider==='openai-api'&&!isLocalWorkoutCommand(text)){void requestLiveCoaching(text);return;}
+    invalidateCoaching();const outcome=handleWorkoutIntent(workout,text);
+    if(outcome.changed)workoutChanged();else render();
     return;
-  }const provider=config.providers.find(p=>p.id===c.provider)!;if(!provider.enabled||(c.provider!=='mock'&&!c.consent)){c.error='Set up this provider and agree to usage, or select Mock.';render();return;}if(paused){c.error='Resume the preview before sending.';render();return;}const f=byId<HTMLSelectElement>('fault');const fault=f.value as RequestData['fault'];f.value='none';void c.send(text,fault);}
+  }
+  const provider=config.providers.find(p=>p.id===c.provider)!;
+  if(!provider.enabled||(c.provider!=='mock'&&!c.consent)){c.error='Set up this provider and agree to usage, or select Mock.';render();return;}
+  if(paused){c.error='Resume the preview before sending.';render();return;}
+  const f=byId<HTMLSelectElement>('fault');const fault=f.value as RequestData['fault'];f.value='none';void c.send(text,fault);
+}
 function syncTimers(){
   if(lastClear!==c.document.clearVersion){nav.dispose();nav=makeNav();timers.forget();previousTimers.clear();lastClear=c.document.clearVersion;}
   const ids=new Set<string>();for(const s of c.document.screens)for(const node of s.props.children as StatementNode[])if(node.name==='Timer'){ids.add(node.key);timers.ensure(node.key,{label:String(node.props.label),seconds:Number(node.props.seconds)});}
@@ -48,13 +75,14 @@ function timerAction(id:string,action:'start'|'pause'|'reset'|'finish'){
   c.localEvent(event??`Simulated ${action} for ${after.label}.`);tick();
 }
 function render(){
-  if(config){const selected=config.providers.find(p=>p.id===c.provider)!;byId('mode').textContent=c.provider==='mock'?'MOCK · NO MODEL CALLS':selected.enabled?'LIVE WHEN SENT':'SETUP / BLOCKED';byId('provider-description').textContent=selected.message;byId('consent-wrap').hidden=c.provider==='mock'||!selected.enabled;byId('consent-label').textContent=c.provider==='claude-cli'?'Use my subscription quota on Send/Retry; I reviewed the host-policy limits.':'Use my API budget on Send/Retry.';byId<HTMLInputElement>('consent').checked=c.consent;byId<HTMLButtonElement>('send').disabled=!selected.enabled||(c.provider!=='mock'&&!c.consent)||paused;byId('mock-controls').hidden=c.provider!=='mock';byId('sample').hidden=c.provider!=='mock';}
-  byId('send').textContent=c.pending?'Send update ↗':'Send ↗';byId<HTMLButtonElement>('cancel').disabled=!c.pending;byId('pending').hidden=!c.pending;byId('status').textContent=c.pending?'Thinking… type an update to interrupt':c.error?'Needs attention':'Ready when you are';byId('error').hidden=!c.error;byId('error-message').textContent=c.error;
-  const transcript=byId('transcript');transcript.replaceChildren();if(!c.events.length)transcript.append(el('p','The workout runs locally without a model. Try a guided action above, or experiment with optional provider responses here.','micro'));
+  if(config){const selected=config.providers.find(p=>p.id===c.provider)!;byId('mode').textContent=c.provider==='mock'?'MOCK · NO MODEL CALLS':selected.enabled?'LIVE WHEN SENT':'SETUP / BLOCKED';byId('provider-description').textContent=selected.message;byId('consent-wrap').hidden=c.provider==='mock'||!selected.enabled;byId('consent-label').textContent=c.provider==='claude-cli'?'Use my subscription quota on Send/Retry; I reviewed the host-policy limits.':'Use my API budget on Send/Retry.';byId<HTMLInputElement>('consent').checked=c.consent;byId<HTMLButtonElement>('send').disabled=!selected.enabled||(c.provider!=='mock'&&c.provider!=='openai-api'&&!c.consent)||paused;byId('mock-controls').hidden=c.provider!=='mock';byId('sample').hidden=c.provider!=='mock';}
+  byId('send').textContent=coachPending?'Ask again ↗':c.pending?'Send update ↗':c.provider==='openai-api'&&workoutMode()?'Send / Ask coach ↗':'Send ↗';byId<HTMLButtonElement>('cancel').disabled=!c.pending;byId('pending').hidden=!c.pending;byId('status').textContent=coachPending?'AiRA is drafting your coaching text…':c.pending?'Thinking… type an update to interrupt':c.error?'Needs attention':c.provider==='openai-api'&&workoutMode()?'Workout controls are local; other questions request AI text':'Ready when you are';byId('error').hidden=!c.error;byId('error-message').textContent=c.error;
+  const transcript=byId('transcript');transcript.replaceChildren();if(!c.events.length&&!coachHistory.length)transcript.append(el('p','The workout runs locally without a model. Try a guided action above, or experiment with optional provider responses here.','micro'));
   for(const event of c.events){if(event.kind==='input'||event.kind==='response'){const n=el('div','','message '+(event.kind==='input'?'user':'assistant'));n.append(el('span',event.kind==='input'?'You':'Reply','who'),el('p',event.text??splitReply(event.result!.turn.reply).prose??''));transcript.append(n);}else if(event.text)transcript.append(el('p',event.text,'event'));else if(event.kind==='interrupted'||event.kind==='cancelled')transcript.append(el('p',event.kind==='interrupted'?'Previous reply interrupted. Your messages are kept.':'Reply cancelled.','event'));}
+  for(const line of coachHistory){const n=el('div','','message '+(line.role==='user'?'user':'assistant'));n.append(el('span',line.role==='user'?'You':'AI coach','who'),el('p',line.text));transcript.append(n);}
   transcript.scrollTop=transcript.scrollHeight;syncTimers();
   const shortcuts=byId('coach-shortcuts');
-  const showShortcuts=c.provider==='mock'&&workoutMode();shortcuts.hidden=!showShortcuts;
+  const showShortcuts=workoutMode();shortcuts.hidden=!showShortcuts;
   shortcuts.replaceChildren();
   if(showShortcuts){
     const commands=workout.stage==='setup'?['Quick','Gentle']:
@@ -64,7 +92,7 @@ function render(){
       workout.stage==='recovery'?['More rest','Make it lighter','Pause']:
       workout.stage==='flow_a'?['Make it lighter','What’s next?','Pause']:
       workout.activePhase?['What’s next?','Pause','End session']:['How much time?'];
-    shortcuts.append(el('span','LOCAL DEMO COMMANDS','micro'));
+    shortcuts.append(el('span','LOCAL WORKOUT CONTROLS · NO API CALL','micro'));
     for(const command of commands){const chip=el('button',command,'coach-chip') as HTMLButtonElement;chip.type='button';chip.addEventListener('click',()=>send(command));shortcuts.append(chip);}
   }
   const screens=c.document.screens,index=screens.findIndex(s=>s.key===c.document.cursor),isWorkout=workoutMode(),key=c.document.echo()+String(paused)+(isWorkout?workout.revision:'');
@@ -75,18 +103,20 @@ function render(){
   }
   byId('navigation').hidden=isWorkout||screens.length<2;byId('position').textContent=`${index+1} / ${screens.length}`;byId<HTMLButtonElement>('back').disabled=paused||index<=0;byId<HTMLButtonElement>('next').disabled=paused;byId('next').textContent=index===screens.length-1?'Finish preview':'Next →';
   byId('pause').hidden=isWorkout;byId<HTMLButtonElement>('pause').disabled=!screens.length;byId('pause').textContent=paused?'Resume preview':'Pause preview';byId('paused').hidden=!paused;
-  const cues=(c.document.current?.props.children as StatementNode[]??[]).filter(n=>n.name==='Cue').map(n=>String(n.props.text));byId('spoken').textContent=isWorkout?(workout.coachCue):(cues.join(' ')||c.document.prose||'Current-screen Cues appear here as text. No audio is produced.');
+  const cues=(c.document.current?.props.children as StatementNode[]??[]).filter(n=>n.name==='Cue').map(n=>String(n.props.text));byId('spoken').textContent=isWorkout?(coachCue||workout.coachCue):(cues.join(' ')||c.document.prose||'Current-screen Cues appear here as text. No audio is produced.');
+  byId('coach-origin').textContent=isWorkout?(coachCue?`AI-GENERATED TEXT · ${coachModel} · NO SESSION CHANGES`:'LOCAL SESSION GUIDANCE · NO MODEL CALL'):'ORIGINAL OPENUI FIXTURE · TEXT ONLY';
+  byId('coach-feedback').textContent=isWorkout?(coachPending?'AiRA is writing a short coaching response. Your timer keeps running.':coachError):'';
   byId('state-json').textContent=JSON.stringify({ui_state:c.document.echo(),client_events:c.clientEvents,timers:timers.list(),workout:isWorkout?{stage:workout.stage,pace:workout.pace,preset:workout.preset,waiting:workout.waiting,paused:workout.paused,phaseTimers:workout.timers.list(),records:workout.records,changes:workout.changes}:undefined},null,2);byId<HTMLButtonElement>('export').disabled=c.pending||!c.events.length;
 }
 byId<HTMLFormElement>('composer').addEventListener('submit',event=>{event.preventDefault();const text=draft.value.trim();if(text){draft.value='';send(text);}});
 draft.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();byId<HTMLFormElement>('composer').requestSubmit();}});
-byId('sample').addEventListener('click',()=>send('Load wiring sample'));byId('cancel').addEventListener('click',()=>c.cancel());byId('retry').addEventListener('click',()=>{if(!paused)void c.retry();});
-byId('reset').addEventListener('click',()=>{nav.dispose();paused=false;pausedTimers=[];timers.forget();previousTimers.clear();draft.value='';c.reset();workout.reset();seedWorkout();render();});
+byId('sample').addEventListener('click',()=>{invalidateCoaching();coachHistory=[];send('Load wiring sample');});byId('cancel').addEventListener('click',()=>c.cancel());byId('retry').addEventListener('click',()=>{if(!paused)void c.retry();});
+byId('reset').addEventListener('click',()=>{invalidateCoaching();coachHistory=[];nav.dispose();paused=false;pausedTimers=[];timers.forget();previousTimers.clear();draft.value='';c.reset();workout.reset();seedWorkout();render();});
 byId('back').addEventListener('click',()=>nav.back());byId('next').addEventListener('click',()=>nav.next());
 byId('pause').addEventListener('click',()=>{paused=!paused;if(paused){pausedTimers=timers.list().filter(t=>t.status==='running').map(t=>t.id);for(const id of pausedTimers)timers.pause(id);}else{for(const id of pausedTimers)timers.start(id);pausedTimers=[];}c.localEvent(paused?'User paused the preview.':'User resumed the preview.');tick();});
-byId<HTMLSelectElement>('provider').addEventListener('change',event=>c.selectProvider((event.target as HTMLSelectElement).value as Provider));
-byId<HTMLInputElement>('consent').addEventListener('change',event=>{c.consent=(event.target as HTMLInputElement).checked;if(!c.consent)c.cancel();render();});
+byId<HTMLSelectElement>('provider').addEventListener('change',event=>{invalidateCoaching();c.selectProvider((event.target as HTMLSelectElement).value as Provider);});
+byId<HTMLInputElement>('consent').addEventListener('change',event=>{c.consent=(event.target as HTMLInputElement).checked;if(!c.consent){c.cancel();invalidateCoaching();}render();});
 byId('apply-patch').addEventListener('click',()=>{try{const raw=byId<HTMLTextAreaElement>('patch').value;c.document.apply(raw.includes('```')?raw:'```openui\n'+raw+'\n```');c.localEvent('Builder applied local OpenUI data: '+raw);byId('patch-status').textContent='Patch accepted. This is local fixture evidence, not a model run.';}catch{byId('patch-status').textContent='Invalid patch. Previous screen kept. Check names, arguments and catalog.';}});
-byId('export').addEventListener('click',()=>{const label=byId<HTMLSelectElement>('run-label').value;const payload={format:'aira-workout-run-v1',label,appVersion:APP_VERSION,schemaVersion:SCHEMA_VERSION,selectedProvider:c.provider,note:byId<HTMLTextAreaElement>('note').value,events:c.events,state:{ui_state:c.document.echo(),client_events:c.clientEvents},timers:timers.list(),workout:{stage:workout.stage,records:workout.records,changes:workout.changes,elapsed:workout.elapsed,endedEarly:workout.endedEarly}};const url=URL.createObjectURL(new Blob([JSON.stringify(redactValue(payload),null,2)],{type:'application/json'}));const link=el('a');link.href=url;link.download=label+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);byId('export-status').textContent=`Downloaded ${label}.json. Review and move it into runs/.`;});
+byId('export').addEventListener('click',()=>{const label=byId<HTMLSelectElement>('run-label').value;const payload={format:'aira-workout-run-v1',label,appVersion:APP_VERSION,schemaVersion:SCHEMA_VERSION,selectedProvider:c.provider,coachHistory,coachGenerated:Boolean(coachHistory.some(l=>l.role==='assistant')),note:byId<HTMLTextAreaElement>('note').value,events:c.events,state:{ui_state:c.document.echo(),client_events:c.clientEvents},timers:timers.list(),workout:{stage:workout.stage,records:workout.records,changes:workout.changes,elapsed:workout.elapsed,endedEarly:workout.endedEarly}};const url=URL.createObjectURL(new Blob([JSON.stringify(redactValue(payload),null,2)],{type:'application/json'}));const link=el('a');link.href=url;link.download=label+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);byId('export-status').textContent=`Downloaded ${label}.json. Review and move it into runs/.`;});
 async function start(){seedWorkout();render();try{const response=await fetch('/api/config');if(!response.ok)throw new Error();config=await response.json();const select=byId<HTMLSelectElement>('provider');select.replaceChildren();for(const p of config!.providers){const option=el('option',p.label+(p.enabled?'':' · setup / blocked'));option.value=p.id;select.append(option);}select.value='mock';select.disabled=false;render();}catch{byId('status').textContent='Could not connect. Restart the local server and reload.';}}
 setInterval(tick,250);void start();

@@ -11,7 +11,7 @@ export function readConfig(env: NodeJS.ProcessEnv, root: string): Config {
   if (env.APP_MODE && !['mock', 'live'].includes(env.APP_MODE)) throw new Error('Legacy APP_MODE must be mock or live; select the provider in the browser.');
   if (env.APP_MODE === 'live' && (env.ALLOW_LIVE_API !== 'true' || !env.OPENAI_API_KEY)) throw new Error('Live mode requires ALLOW_LIVE_API=true and OPENAI_API_KEY in your local environment.');
   const allowLive = env.ALLOW_LIVE_API === 'true';
-  return { root, key: allowLive ? (env.OPENAI_API_KEY ?? '') : '', model: model(env.OPENAI_MODEL, 'gpt-6-luna', 'OPENAI_MODEL'), allowLive,
+  return { root, key: allowLive ? (env.OPENAI_API_KEY ?? '') : '', model: model(env.OPENAI_MODEL, 'gpt-4.1-mini', 'OPENAI_MODEL'), allowLive,
     claude: { enabled: env.ALLOW_CLAUDE_CLI === 'true', profileAcknowledged: env.CLI_PROFILE_ACKNOWLEDGED === 'true', binary: env.CLAUDE_CLI_PATH ?? '', model: model(env.CLAUDE_MODEL, '', 'CLAUDE_MODEL'), timeoutMs: 45_000 } };
 }
 export function providerStatuses(config: Config): ProviderStatus[] {

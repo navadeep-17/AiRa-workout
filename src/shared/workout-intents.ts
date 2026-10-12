@@ -1,6 +1,13 @@
 import {PHASE_INFO,PHASE_KEYS,formatDuration,WorkoutSession} from './workout-session.js';
 
 export type WorkoutIntentResult={intent:string;message:string;changed:boolean};
+/** Detect a local control command without mutating the session. Model calls are for questions only. */
+export function isLocalWorkoutCommand(input:string):boolean {
+ const t=input.toLowerCase().replace(/[’]/g,"'").trim().replace(/[!?.,]+/g,' ').replace(/\s+/g,' ');
+ return /\b(what(?:'s| is) next|next phase|up next|how much time|time left|how long|remaining|progress|where am i|undo|restore|original pace|go back to normal|more time|more rest|ten more|extra rest|extend|add (?:10|ten)|another (?:10|ten)|lighter|slower|slow down|less intense|easier|gentler|low energy|tired)\b/.test(t)||
+ /^(pause|pause (?:the )?(?:timer|session|workout)|hold on|wait|resume|resume (?:the )?(?:timer|session|workout)|i(?:'m| am) ready|keep going|continue|next|continue to next|next phase please|skip|skip (?:this )?(?:phase|part|interval)|stop|stop workout|end|end session|end workout|finish early|i want to stop|show plan|view plan|my plan|quick|unhurried|steady|gentle)$/.test(t);
+}
+
 /**
  * Deterministic local Mock-mode commands. These are deliberately NOT called AI reasoning.
  * Only the trusted session's guarded methods can change timers or progress.

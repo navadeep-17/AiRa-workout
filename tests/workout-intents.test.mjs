@@ -44,3 +44,9 @@ test('invalid contexts do not claim timer extensions or simulated measurements',
  assert.match(result.message,/recovery countdown/i);assert.equal(s.stage,'settle');
  assert.match(say(s,'progress').message,/0 of 5 phases completed/);
 });
+
+test('known local commands are distinguished from optional open-ended coaching questions',async()=>{
+ const {isLocalWorkoutCommand}=await import('../dist/shared/workout-intents.js');
+ for(const text of ['More rest','Pause','slow down','what’s next?','show plan','quick'])assert.equal(isLocalWorkoutCommand(text),true,text);
+ for(const text of ['Give me a quick pep talk','How can I feel calmer?','Does this app understand my question?'])assert.equal(isLocalWorkoutCommand(text),false,text);
+});

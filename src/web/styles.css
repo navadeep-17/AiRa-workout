@@ -23,3 +23,8 @@ button.coach-chip{border:1px solid #cadccf;background:#fcfdfa;color:#3a614c;bord
 button.coach-chip:hover:not(:disabled){background:#deebdf}
 button.coach-chip:focus-visible{outline:3px solid #347452;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){button.coach-chip{transition:none}}
+
+#coach-origin{display:block;margin-top:10px;color:#50715f;font-weight:650;letter-spacing:.07em}
+#coach-feedback{min-height:1em;margin:8px 0 0;color:#795c36;line-height:1.45}
+#consent-wrap{line-height:1.45}
+@media(max-width:650px){#coach-origin{font-size:10px}}
